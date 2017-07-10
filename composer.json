@@ -1,0 +1,24 @@
+{
+  "name": "matrozov/yii2-couchbase",
+  "description": "Yii2 couchbase driver.",
+  "keywords": ["couchbase", "yii", "yii2", "yii 2"],
+  "type": "yii2-extension",
+  "homepage": "https://github.com/matrozov/yii2-couchbase",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Matrozov Oleg",
+      "email": "oleg.matrozov@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "yiisoft/yii2": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "matrozov\\yii2-couchbase\\": "src"
+    }
+  }
+}
