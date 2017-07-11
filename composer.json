@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "matrozov\\yii2-couchbase\\": "src"
+            "matrozov\\couchbase\\": "src"
         }
     }
 }
