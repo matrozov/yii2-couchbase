@@ -171,6 +171,7 @@ class Connection extends Component
             Yii::beginProfile($token, __METHOD__);
 
             $this->cluster = new \CouchbaseCluster($this->dsn, $this->username, $this->password);
+
             $this->initConnection();
 
             Yii::endProfile($token, __METHOD__);
