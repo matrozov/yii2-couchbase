@@ -14,7 +14,7 @@
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "^2.0",
-        "ext-couchbase": ""
+        "ext-couchbase": "^4.5"
     },
     "autoload": {
         "psr-4": {
