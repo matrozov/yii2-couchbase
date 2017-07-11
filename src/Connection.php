@@ -39,9 +39,16 @@ class Connection extends Component
     public $password = '';
 
     /**
+     * @var string Default bucked name
+     */
+    public $defaultBucked = 'default';
+
+    /**
      * @var \CouchbaseCluster CouchBase driver cluster.
      */
     public $cluster;
+
+    public $commandClass = 'matrozov\couchbase\Command';
 
     /**
      * @var string name of the CouchBase database to use by default.
@@ -124,8 +131,12 @@ class Connection extends Component
      * @param string $password bucked password
      * @return Bucked CouchBase basket instance.
      */
-    public function getBucked($name = 'default', $password = null)
+    public function getBucked($name = null, $password = null)
     {
+        if ($name === null) {
+            $name = $this->defaultBucked;
+        }
+
         return $this->getDatabase()->getBucked($name, $password);
     }
 
@@ -209,5 +220,22 @@ class Connection extends Component
     public function quoteBuckedName($buckedName)
     {
         return '`' . $buckedName . '`';
+    }
+
+    /**
+     * Creates a command for execution.
+     * @param string $sql the SQL statement to be executed
+     * @param array $params the parameters to be bound to the SQL statement
+     * @return Command the DB command
+     */
+    public function createCommand($sql = null, $params = [])
+    {
+        /** @var Command $command */
+        $command = new $this->commandClass([
+            'db' => $this,
+            'sql' => $sql,
+        ]);
+
+        return $command->bindValues($params);
     }
 }

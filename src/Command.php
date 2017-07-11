@@ -30,4 +30,26 @@ class Command extends Object
         return $this->_sql;
     }
 
+    public function setSql($sql)
+    {
+        $this->_sql = $sql;
+    }
+
+    public function bindValues($params)
+    {
+        if (empty($values)) {
+            return $this;
+        }
+
+        foreach ($values as $name => $value) {
+            if (is_array($value)) {
+                $this->params[$name] = $value[0];
+            }
+            else {
+                $this->params[$name] = $value;
+            }
+        }
+
+        return $this;
+    }
 }

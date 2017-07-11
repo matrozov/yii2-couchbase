@@ -49,7 +49,7 @@ class Database extends Object
      * @return Bucked collection instance.
      * @throws \Exception
      */
-    protected function selectBucked($name = 'default', $password = '')
+    protected function selectBucked($name, $password = '')
     {
         $bucked = $this->connection->cluster->openBucket($name, $password);
 
