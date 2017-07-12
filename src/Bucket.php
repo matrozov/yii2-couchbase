@@ -6,9 +6,8 @@
 namespace matrozov\couchbase;
 
 use yii\base\Object;
-use Yii;
 
-class Bucked extends Object
+class Bucket extends Object
 {
     /**
      * @var Database CouchBase database instance
@@ -16,20 +15,20 @@ class Bucked extends Object
     public $database;
 
     /**
-     * @var \CouchbaseBucket CouchBase bucked instance
+     * @var \Couchbase\Bucket CouchBase bucket instance
      */
-    public $bucked;
+    public $bucket;
 
     /**
-     * @return string name of this bucked.
+     * @return string name of this bucket.
      */
     public function getName()
     {
-        return $this->bucked->getName();
+        return $this->bucket->getName();
     }
 
     /**
-     * @return string full name of this bucked, including database name.
+     * @return string full name of this bucket, including database name.
      */
     public function getFullName()
     {

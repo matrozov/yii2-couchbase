@@ -5,6 +5,8 @@
 
 namespace matrozov\couchbase;
 
+use Couchbase\Cluster;
+use Couchbase\ClusterManager;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use Yii;
@@ -20,35 +22,66 @@ class Connection extends Component
      * @var string host:port
      *
      * Correct syntax is:
-     * couchbase://[username:password@]host1[:port1][,host2[:port2:],...][/dbname]
+     * couchbase://host1[:port1][,host2[:port2:],...]
      * For example:
      * couchbase://localhost:27017
-     * couchbase://developer:password@localhost:27017
-     * couchbase://developer:password@localhost:27017/mydatabase
      */
     public $dsn;
 
     /**
-     * @var string CouchBase user name
+     * @var string CouchBase manager username
      */
-    public $username = '';
+    public $managerUserName;
 
     /**
-     * @var string CouchBase password
+     * @var string CouchBase manager password
      */
-    public $password = '';
+    public $managerPassword;
 
     /**
-     * @var string Default bucked name
+     * @var string the common prefix or suffix for bucket names. If a bucket name is given
+     * as `{{%BucketName}}`, then the percentage character `%` will be replaced with this
+     * property value. For example, `{{%post}}` becomes `{{tbl_post}}`.
      */
-    public $defaultBucked = 'default';
+    public $bucketPrefix = '';
 
     /**
-     * @var \CouchbaseCluster CouchBase driver cluster.
+     * @var string Default bucket name
+     */
+    public $defaultBucket = 'default';
+
+    /**
+     * @var Cluster CouchBase driver cluster.
      */
     public $cluster;
 
+    /**
+     * @var ClusterManager CouchBase cluster manager driver.
+     */
+    public $manager;
+
+    /**
+     * @var string the class used to create new database [[Command]] objects. If you want to extend the [[Command]] class,
+     * you may configure this property to use your extended version of the class.
+     * @see createCommand
+     */
     public $commandClass = 'matrozov\couchbase\Command';
+
+    /**
+     * @var bool whether to enable logging of database queries. Defaults to true.
+     * You may want to disable this option in a production environment to gain performance
+     * if you do not need the information being logged.
+     * @see enableProfiling
+     */
+    public $enableLogging = true;
+
+    /**
+     * @var bool whether to enable profiling of database queries. Defaults to true.
+     * You may want to disable this option in a production environment to gain performance
+     * if you do not need the information being logged.
+     * @see enableLogging
+     */
+    public $enableProfiling = true;
 
     /**
      * @var string name of the CouchBase database to use by default.
@@ -60,7 +93,12 @@ class Connection extends Component
     /**
      * @var Database[] list of CouchBase databases.
      */
-    private $_databases;
+    private $_databases = [];
+
+    /**
+     * @var QueryBuilder
+     */
+    private $_builder;
 
     /**
      * Sets default database name.
@@ -80,11 +118,11 @@ class Connection extends Component
     public function getDefaultDatabaseName()
     {
         if ($this->_defaultDatabaseName === null) {
-            if (preg_match('/^couchbase:\\/\\/.+\\/([^?&]+)/s', $this->dsn, $matches)) {
+            if (preg_match('#^couchbase://([^:]+)#', $this->dsn, $matches)) {
                 $this->_defaultDatabaseName = $matches[1];
             }
             else {
-                throw new InvalidConfigException("Unable to determine default database name from dsn.");
+                throw new InvalidConfigException('Unable to determine default database name from dsn.');
             }
         }
 
@@ -124,29 +162,39 @@ class Connection extends Component
     }
 
     /**
-     * Returns the CouchBase bucked with the given name.
-     * @param string|array $name bucked name. If string considered as the name of the collection
+     * Returns the CouchBase bucket with the given name.
+     * @param string|array $name bucket name. If string considered as the name of the collection
      * inside the default database. If array - first element considered as the name of the database,
      * second - as name of collection inside that database
-     * @param string $password bucked password
-     * @return Bucked CouchBase basket instance.
+     * @param string $password bucket password
+     * @return Bucket CouchBase basket instance.
      */
-    public function getBucked($name = null, $password = null)
+    public function getBucket($name = null, $password = null)
     {
         if ($name === null) {
-            $name = $this->defaultBucked;
+            $name = $this->defaultBucket;
         }
 
-        return $this->getDatabase()->getBucked($name, $password);
+        return $this->getDatabase()->getBucket($name, $password);
     }
 
     /**
      * Returns a value indicating whether the CouchBase connection is established.
-     * @return bool whether the Mongo connection is established
+     * @return bool whether the CouchBase connection is established
      */
     public function getIsActive()
     {
-        return is_object($this->cluster);
+        return $this->cluster !== null;
+    }
+
+    /**
+     * Returns a value indicating whether the CouchBase connection is established
+     * and you has administration privilege.
+     * @return bool whether the CouchBase connection is established and has privilege.
+     */
+    public function getIsManagerActive()
+    {
+        return $this->manager !== null;
     }
 
     /**
@@ -170,7 +218,11 @@ class Connection extends Component
             Yii::trace($token, __METHOD__);
             Yii::beginProfile($token, __METHOD__);
 
-            $this->cluster = new \CouchbaseCluster($this->dsn, $this->username, $this->password);
+            $this->cluster = new Cluster($this->dsn);
+
+            if ($this->managerUserName) {
+                $this->manager = $this->cluster->manager($this->managerUserName, $this->managerPassword);
+            }
 
             $this->initConnection();
 
@@ -195,9 +247,10 @@ class Connection extends Component
         Yii::trace('Closing CouchBase connection: ' . $this->dsn, __METHOD__);
 
         $this->cluster = null;
+        $this->manager = null;
 
         foreach ($this->_databases as $database) {
-            $database->clearBuckeds();
+            $database->clearBuckets();
         }
 
         $this->_databases = [];
@@ -213,14 +266,66 @@ class Connection extends Component
         $this->trigger(self::EVENT_AFTER_OPEN);
     }
 
-    public function quoteColumnName($columnName)
+    /**
+     * Quotes a string value for use in a query.
+     * Note that if the parameter is not a string, it will be returned without change.
+     * @param string $value string to be quoted
+     * @return string the properly quoted string
+     * @see http://php.net/manual/en/pdo.quote.php
+     */
+    public function quoteValue($value)
     {
-        return $columnName;
+        return '"' . addcslashes(str_replace('"', '\"', $value), "\000\n\r\\\032") . '"';
     }
 
-    public function quoteBuckedName($buckedName)
+    /**
+     * Quotes a table name for use in a query.
+     * If the table name contains schema prefix, the prefix will also be properly quoted.
+     * If the table name is already quoted or contains special characters including '(', '[[' and '{{',
+     * then this method will do nothing.
+     * @param string $name table name
+     * @return string the properly quoted table name
+     */
+    public function quoteBucketName($bucketName)
     {
-        return '`' . $buckedName . '`';
+        return strpos($bucketName, '`') !== false ? $bucketName : "`$bucketName`";
+    }
+
+    /**
+     * Quotes a column name for use in a query.
+     * If the column name contains prefix, the prefix will also be properly quoted.
+     * If the column name is already quoted or contains special characters including '(', '[[' and '{{',
+     * then this method will do nothing.
+     * @param string $columnName column name
+     * @return string the properly quoted column name
+     */
+    public function quoteColumnName($columnName)
+    {
+        return strpos($columnName, "`") !== false ? $columnName : "`" . $columnName . "`";
+    }
+
+    /**
+     * Processes a SQL statement by quoting table and column names that are enclosed within double brackets.
+     * Tokens enclosed within double curly brackets are treated as table names, while
+     * tokens enclosed within double square brackets are column names. They will be quoted accordingly.
+     * Also, the percentage character "%" at the beginning or ending of a table name will be replaced
+     * with [[bucketPrefix]].
+     * @param string $sql the SQL to be quoted
+     * @return string the quoted SQL
+     */
+    public function quoteSql($sql)
+    {
+        return preg_replace_callback(
+            '/(\\{\\{(%?[\w\-\. ]+%?)\\}\\}|\\[\\[([\w\-\. ]+)\\]\\])/',
+            function ($matches) {
+                if (isset($matches[3])) {
+                    return $this->quoteColumnName($matches[3]);
+                } else {
+                    return str_replace('%', $this->bucketPrefix, $this->quoteBucketName($matches[2]));
+                }
+            },
+            $sql
+        );
     }
 
     /**
@@ -238,5 +343,17 @@ class Connection extends Component
         ]);
 
         return $command->bindValues($params);
+    }
+
+    /**
+     * @return QueryBuilder the query builder for this connection.
+     */
+    public function getQueryBuilder()
+    {
+        if ($this->_builder === null) {
+            $this->_builder = new QueryBuilder($this);
+        }
+
+        return $this->_builder;
     }
 }

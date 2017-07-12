@@ -21,55 +21,57 @@ class Database extends Object
     public $name;
 
     /**
-     * @var Bucked[] list of baskets.
+     * @var Bucket[] list of baskets.
      */
-    private $_buckeds = [];
+    private $_buckets = [];
 
     /**
-     * Returns the CouchBase bucked with the given name.
-     * @param string $name bucked name
-     * @param string $password bucked password
-     * @return Bucked CouchBase collection instance.
+     * Returns the CouchBase bucket with the given name.
+     *
+     * @param string $name bucket name
+     * @param string $password bucket password
+     *
+     * @return Bucket CouchBase collection instance.
      */
-    public function getBucked($name = 'default', $password = null)
+    public function getbucket($name = 'default', $password = null)
     {
-        if (!array_key_exists($name, $this->_buckeds)) {
-            $this->_buckeds[$name] = $this->selectBucked($name, $password);
+        if (!array_key_exists($name, $this->_buckets)) {
+            $this->_buckets[$name] = $this->selectbucket($name, $password);
         }
 
-        return $this->_buckeds[$name];
+        return $this->_buckets[$name];
     }
 
     /**
-     * Selects bucked with given name and password.
+     * Selects bucket with given name and password.
      *
-     * @param string $name     bucked name.
-     * @param string $password bucked password.
+     * @param string $name     bucket name.
+     * @param string $password bucket password.
      *
-     * @return Bucked collection instance.
+     * @return Bucket collection instance.
      * @throws \Exception
      */
-    protected function selectBucked($name, $password = '')
+    protected function selectbucket($name, $password = '')
     {
-        $bucked = $this->connection->cluster->openBucket($name, $password);
+        $bucket = $this->connection->cluster->openBucket($name, $password);
 
-        if (!$bucked) {
+        if (!$bucket) {
             throw new \Exception();
         }
 
         return Yii::createObject([
-            'class' => 'matrozov\couchbase\Bucked',
+            'class' => 'matrozov\couchbase\Bucket',
             'database' => $this,
-            'bucked' => $bucked,
+            'bucket' => $bucket,
         ]);
     }
 
     /**
-     * Clears internal buckeds lists.
+     * Clears internal buckets lists.
      * This method can be used to break cycle references between [[Database]] and [[Collection]] instances.
      */
-    public function clearBuckeds()
+    public function clearbuckets()
     {
-        $this->_buckeds = [];
+        $this->_buckets = [];
     }
 }

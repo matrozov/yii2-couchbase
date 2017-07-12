@@ -20,7 +20,8 @@ class Query extends \yii\db\Query
         if ($db === null) {
             $db = Yii::$app->get('couchbase');
         }
-        list ($sql, $params) = $db->getQueryBuilder()->build($this);
+
+        list($sql, $params) = $db->getQueryBuilder()->build($this);
 
         return $db->createCommand($sql, $params);
     }
