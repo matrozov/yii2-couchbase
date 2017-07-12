@@ -76,4 +76,14 @@ class Database extends Object
     {
         $this->_buckets = [];
     }
+
+    /**
+     * Creates CouchBase command associated with this database.
+     * @param array $document command document contents.
+     * @return Command command instance.
+     */
+    public function createCommand($document = [])
+    {
+        return $this->connection->createCommand($document, $this->name);
+    }
 }

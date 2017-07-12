@@ -158,6 +158,11 @@ class ActiveRecord extends BaseActiveRecord
 
         $attributes = [];
 
+        $pk = static::primaryKey();
+        $pk = reset($pk);
+
+        $attributes[$pk] = true;
+
         foreach ($rules as $rule) {
             if (is_array($rule[0])) {
                 foreach ($rule[0] as $field) {
@@ -165,11 +170,11 @@ class ActiveRecord extends BaseActiveRecord
                 }
             }
             else {
-                $attributes[$rule[0]] = $rule[0];
+                $attributes[$rule[0]] = true;
             }
         }
 
-        return array_values($attributes);
+        return array_keys($attributes);
     }
     
     /**
