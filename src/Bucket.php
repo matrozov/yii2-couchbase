@@ -112,11 +112,7 @@ class Bucket extends Object
      */
     public function remove($condition = [], $options = [])
     {
-        $options = array_merge(['limit' => 0], $options);
-
-        $writeResult = $this->database->createCommand()->delete($this->name, $condition, $options);
-
-        return $writeResult->getDeletedCount();
+        return $this->database->createCommand()->delete($this->name, $condition, $options)->execute();
     }
 
     /**

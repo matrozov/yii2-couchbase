@@ -466,7 +466,7 @@ class Command extends Object
 
         $this->prepare();
 
-        $result = null;
+        $result = false;
 
         var_dump($this->getRawSql());
 
@@ -478,14 +478,14 @@ class Command extends Object
             switch ($method) {
                 case self::FETCH_ALL: {
                     if ($res->status !== 'success') {
-                        return null;
+                        return false;
                     }
 
                     $result = $res->rows;
                 } break;
                 case self::FETCH_ONE: {
                     if ($res->status !== 'success') {
-                        return null;
+                        return false;
                     }
 
                     if (!empty($res->rows)) {
@@ -494,7 +494,7 @@ class Command extends Object
                 } break;
                 case self::FETCH_SCALAR: {
                     if ($res->status !== 'success') {
-                        return null;
+                        return false;
                     }
 
                     if (!empty($res->rows)) {
@@ -505,7 +505,7 @@ class Command extends Object
                 } break;
                 case self::FETCH_COLUMN: {
                     if ($res->status !== 'success') {
-                        return null;
+                        return false;
                     }
 
                     if (!empty($res->rows)) {
