@@ -163,9 +163,9 @@ class Connection extends Component
 
     /**
      * Returns the CouchBase bucket with the given name.
-     * @param string|array $name bucket name. If string considered as the name of the collection
+     * @param string|array $name bucket name. If string considered as the name of the bucket
      * inside the default database. If array - first element considered as the name of the database,
-     * second - as name of collection inside that database
+     * second - as name of bucket inside that database
      * @param string $password bucket password
      * @return Bucket CouchBase basket instance.
      */

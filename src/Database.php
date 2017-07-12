@@ -31,7 +31,7 @@ class Database extends Object
      * @param string $name bucket name
      * @param string $password bucket password
      *
-     * @return Bucket CouchBase collection instance.
+     * @return Bucket CouchBase bucket instance.
      */
     public function getbucket($name = 'default', $password = null)
     {
@@ -48,7 +48,7 @@ class Database extends Object
      * @param string $name     bucket name.
      * @param string $password bucket password.
      *
-     * @return Bucket collection instance.
+     * @return Bucket bucket instance.
      * @throws \Exception
      */
     protected function selectbucket($name, $password = '')
@@ -68,7 +68,7 @@ class Database extends Object
 
     /**
      * Clears internal buckets lists.
-     * This method can be used to break cycle references between [[Database]] and [[Collection]] instances.
+     * This method can be used to break cycle references between [[Database]] and [[Bucket]] instances.
      */
     public function clearbuckets()
     {

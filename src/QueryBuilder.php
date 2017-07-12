@@ -5,9 +5,9 @@
 
 namespace matrozov\couchbase;
 
+use Exception;
 use yii\base\InvalidParamException;
 use yii\base\Object;
-use yii\db\Exception;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 
