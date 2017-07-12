@@ -7,6 +7,7 @@ namespace matrozov\couchbase;
 
 use Couchbase\Cluster;
 use Couchbase\ClusterManager;
+use Exception;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use Yii;
@@ -343,6 +344,61 @@ class Connection extends Component
         ]);
 
         return $command->bindValues($params);
+    }
+
+    /**
+     * Creates new bucket in database associated with this command.s
+     *
+     * @param string $bucketName collection name
+     * @param array  $options    collection options in format: "name" => "value"
+     *
+     * @throws Exception
+     */
+    public function createBucket($bucketName, array $options = [])
+    {
+        $this->open();
+
+        if (!$this->getIsManagerActive()) {
+            throw new Exception('Active manager required!');
+        }
+
+        $this->manager->createBucket($bucketName, $options);
+    }
+
+    /**
+     * Drops specified bucket.
+     *
+     * @param string $bucketName name of the collection to be dropped.
+     *
+     * @throws Exception
+     */
+    public function dropBucket($bucketName)
+    {
+        $this->open();
+
+        if (!$this->getIsManagerActive()) {
+            throw new Exception('Active manager required!');
+        }
+
+        $this->manager->removeBucket($bucketName);
+    }
+
+    /**
+     * Returns the list of available buckets.
+     *
+     * @return array buckets information.
+     *
+     * @throws Exception
+     */
+    public function listBuckets()
+    {
+        $this->open();
+
+        if (!$this->getIsManagerActive()) {
+            throw new Exception('Active manager required!');
+        }
+
+        return $this->manager->listBuckets();
     }
 
     /**

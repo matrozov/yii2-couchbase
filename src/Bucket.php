@@ -5,6 +5,7 @@
 
 namespace matrozov\couchbase;
 
+use Exception;
 use yii\base\Object;
 
 class Bucket extends Object
@@ -30,6 +31,16 @@ class Bucket extends Object
     public function getFullName()
     {
         return $this->database->name . '.' . $this->name;
+    }
+
+    /**
+     * Drops this bucket.
+     * @throws Exception on failure.
+     * @return bool whether the operation successful.
+     */
+    public function drop()
+    {
+        return $this->database->dropBucket($this->name);
     }
 
     /**

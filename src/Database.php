@@ -5,6 +5,7 @@
 
 namespace matrozov\couchbase;
 
+use Exception;
 use yii\base\Object;
 use Yii;
 
@@ -85,5 +86,36 @@ class Database extends Object
     public function createCommand()
     {
         return $this->connection->createCommand();
+    }
+
+    /**
+     * Creates new bucket.
+     * @param string $bucketName name of the collection
+     * @param array $options collection options in format: "name" => "value"
+     * @return bool whether operation was successful.
+     * @throws Exception on failure.
+     */
+    public function createCollection($bucketName, $options = [])
+    {
+        return $this->connection->createBucket($bucketName, $options);
+    }
+
+    /**
+     * Drops specified bucket.
+     * @param string $bucketName name of the bucket
+     * @return bool whether operation was successful.
+     */
+    public function dropBucket($bucketName)
+    {
+        return $this->connection->dropBucket($bucketName);
+    }
+
+    /**
+     * Returns the list of available buckets in this database.
+     * @return array buckets information.
+     */
+    public function listBuckets()
+    {
+        return $this->connection->listBuckets();
     }
 }
