@@ -150,7 +150,26 @@ class ActiveRecord extends BaseActiveRecord
      */
     public function attributes()
     {
-        throw new InvalidConfigException('The attributes() method of CouchBase ActiveRecord has to be implemented by child classes.');
+        $rules = $this->rules();
+
+        if (empty($rules)) {
+            throw new InvalidConfigException('The attributes() method of CouchBase ActiveRecord has to be implemented by child classes.');
+        }
+
+        $attributes = [];
+
+        foreach ($rules as $rule) {
+            if (is_array($rule[0])) {
+                foreach ($rule[0] as $field) {
+                    $attributes[$field] = $field;
+                }
+            }
+            else {
+                $attributes[$rule[0]] = $rule[0];
+            }
+        }
+
+        return array_values($attributes);
     }
     
     /**

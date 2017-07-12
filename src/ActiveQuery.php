@@ -49,6 +49,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function prepare($builder)
     {
+        $this->getBucket($builder->db);
+
         if ($this->primaryModel !== null) {
             // lazy loading
             if ($this->via instanceof self) {
@@ -84,8 +86,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Executes query and returns all results as an array.
-     * @param Connection $db the Mongo connection used to execute the query.
-     * If null, the Mongo connection returned by [[modelClass]] will be used.
+     * @param Connection $db the CouchBase connection used to execute the query.
+     * If null, the CouchBase connection returned by [[modelClass]] will be used.
      * @return array|ActiveRecord the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
@@ -95,8 +97,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Executes query and returns a single row of result.
-     * @param Connection $db the Mongo connection used to execute the query.
-     * If null, the Mongo connection returned by [[modelClass]] will be used.
+     * @param Connection $db the CouchBase connection used to execute the query.
+     * If null, the CouchBase connection returned by [[modelClass]] will be used.
      * @return ActiveRecord|array|null a single row of query result. Depending on the setting of [[asArray]],
      * the query result may be either an array or an ActiveRecord object. Null will be returned
      * if the query results in nothing.
@@ -121,7 +123,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      * to unexpected behavior at some Active Record features, because object will be populated by outdated data.
      * @param array $update update criteria
      * @param array $options list of options in format: optionName => optionValue.
-     * @param Connection $db the Mongo connection used to execute the query.
+     * @param Connection $db the CouchBase connection used to execute the query.
      * @return ActiveRecord|array|null the original document, or the modified document when $options['new'] is set.
      * Depending on the setting of [[asArray]], the query result may be either an array or an ActiveRecord object.
      * Null will be returned if the query results in nothing.
@@ -142,7 +144,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Returns the CouchBase bucket for this query.
-     * @param Connection $db Mongo connection.
+     * @param Connection $db CouchBase connection.
      * @return Bucket bucket instance.
      */
     public function getBucket($db = null)
@@ -152,6 +154,10 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
         if ($db === null) {
             $db = $modelClass::getDb();
+        }
+
+        if ($this->select === null) {
+            $this->select = $db->quoteBucketName($modelClass::bucketName()) . '.*';
         }
 
         if ($this->from === null) {
@@ -187,5 +193,16 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         }
 
         return $models;
+    }
+
+    /**
+     * @return string bucket name
+     */
+    protected function getBucketName()
+    {
+        /* @var $modelClass ActiveRecord */
+        $modelClass = $this->modelClass;
+
+        return $modelClass::bucketName();
     }
 }

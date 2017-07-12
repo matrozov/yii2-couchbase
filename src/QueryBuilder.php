@@ -91,7 +91,7 @@ class QueryBuilder extends Object
         $params = empty($params) ? $query->params : array_merge($params, $query->params);
 
         $clauses = [
-            $this->buildSelect($query->select, $params, $query->distinct, $query->selectOption),
+            $this->buildSelect($query->select, $params, $query->distinct, $query->selectOption, $query),
             $this->buildFrom($query->from, $params),
             $this->buildJoin($query->join, $params),
             $this->buildWhere($query->where, $params),
@@ -377,9 +377,10 @@ class QueryBuilder extends Object
      * @param array $params the binding parameters to be populated
      * @param bool $distinct
      * @param string $selectOption
+     * @param Query $query
      * @return string the SELECT clause built from [[Query::$select]].
      */
-    public function buildSelect($columns, &$params, $distinct = false, $selectOption = null)
+    public function buildSelect($columns, &$params, $distinct = false, $selectOption = null, $query)
     {
         $select = $distinct ? 'SELECT DISTINCT' : 'SELECT';
 
@@ -390,6 +391,8 @@ class QueryBuilder extends Object
         if (empty($columns)) {
             return $select . ' *';
         }
+
+        $columns = is_array($columns) ? $columns : [$columns];
 
         foreach ($columns as $i => $column) {
             if ($column instanceof Expression) {
@@ -424,19 +427,19 @@ class QueryBuilder extends Object
     }
 
     /**
-     * @param array $buckets
+     * @param array $bucketName
      * @param array $params the binding parameters to be populated
      * @return string the FROM clause built from [[Query::$from]].
      */
-    public function buildFrom($buckets, &$params)
+    public function buildFrom($bucketName, &$params)
     {
-        if (empty($buckets)) {
+        if (empty($bucketName)) {
             return '';
         }
 
-        $buckets = $this->quotebucketNames($buckets, $params);
+        $bucketName = $this->quoteBucketName($bucketName, $params);
 
-        return 'FROM ' . implode(', ', $buckets);
+        return 'FROM ' . $bucketName;
     }
 
     /**
@@ -457,11 +460,11 @@ class QueryBuilder extends Object
             }
 
             // 0:join type, 1:join table, 2:on-condition (optional)
-            list($joinType, $table) = $join;
+            list($joinType, $bucketName) = $join;
 
-            $tables = $this->quotebucketNames((array)$table, $params);
-            $table = reset($tables);
-            $joins[$i] = "$joinType $table";
+            $bucketNames = $this->quoteBucketName($bucketName, $params);
+            $bucketName = reset($bucketNames);
+            $joins[$i] = "$joinType $bucketName";
 
             if (isset($join[2])) {
                 $condition = $this->buildCondition($join[2], $params);
@@ -482,27 +485,31 @@ class QueryBuilder extends Object
      * @param array $params
      * @return array
      */
-    private function quotebucketNames($buckets, &$params)
+    private function quoteBucketName($buckets, &$params)
     {
+        if (!is_array($buckets)) {
+            return $this->db->quoteBucketName($buckets);
+        }
+
         foreach ($buckets as $i => $bucket) {
             if ($bucket instanceof Query) {
                 list($sql, $params) = $this->build($bucket, $params);
 
-                $buckets[$i] = "($sql) " . $this->db->quotebucketName($i);
+                $buckets[$i] = "($sql) " . $this->db->quoteBucketName($i);
             }
             elseif (is_string($i)) {
                 if (strpos($bucket, '(') === false) {
-                    $bucket = $this->db->quotebucketName($bucket);
+                    $bucket = $this->db->quoteBucketName($bucket);
                 }
 
-                $buckets[$i] = "$bucket " . $this->db->quotebucketName($i);
+                $buckets[$i] = "$bucket " . $this->db->quoteBucketName($i);
             }
             elseif (strpos($bucket, '(') === false) {
                 if (preg_match('/^(.*?)(?i:\s+as|)\s+([^ ]+)$/', $bucket, $matches)) { // with alias
-                    $buckets[$i] = $this->db->quotebucketName($matches[1]) . ' ' . $this->db->quotebucketName($matches[2]);
+                    $buckets[$i] = $this->db->quoteBucketName($matches[1]) . ' ' . $this->db->quoteBucketName($matches[2]);
                 }
                 else {
-                    $buckets[$i] = $this->db->quotebucketName($bucket);
+                    $buckets[$i] = $this->db->quoteBucketName($bucket);
                 }
             }
         }

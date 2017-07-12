@@ -472,7 +472,7 @@ class Command extends Object
 
         try {
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
-
+            
             $result = $this->db->getBucket()->bucket->query($this->n1ql, true);
             $result = array_values($result->rows);
 

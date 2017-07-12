@@ -33,10 +33,10 @@ class Database extends Object
      *
      * @return Bucket CouchBase bucket instance.
      */
-    public function getbucket($name = 'default', $password = null)
+    public function getBucket($name = 'default', $password = null)
     {
         if (!array_key_exists($name, $this->_buckets)) {
-            $this->_buckets[$name] = $this->selectbucket($name, $password);
+            $this->_buckets[$name] = $this->selectBucket($name, $password);
         }
 
         return $this->_buckets[$name];
@@ -51,8 +51,10 @@ class Database extends Object
      * @return Bucket bucket instance.
      * @throws \Exception
      */
-    protected function selectbucket($name, $password = '')
+    protected function selectBucket($name, $password = '')
     {
+        $this->connection->open();
+
         $bucket = $this->connection->cluster->openBucket($name, $password);
 
         if (!$bucket) {
@@ -70,7 +72,7 @@ class Database extends Object
      * Clears internal buckets lists.
      * This method can be used to break cycle references between [[Database]] and [[Bucket]] instances.
      */
-    public function clearbuckets()
+    public function clearBuckets()
     {
         $this->_buckets = [];
     }

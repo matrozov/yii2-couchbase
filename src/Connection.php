@@ -283,7 +283,7 @@ class Connection extends Component
      * If the table name contains schema prefix, the prefix will also be properly quoted.
      * If the table name is already quoted or contains special characters including '(', '[[' and '{{',
      * then this method will do nothing.
-     * @param string $name table name
+     * @param string $bucketName bucket name
      * @return string the properly quoted table name
      */
     public function quoteBucketName($bucketName)
