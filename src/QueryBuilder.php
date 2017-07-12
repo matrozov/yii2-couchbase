@@ -289,7 +289,7 @@ class QueryBuilder extends Object
      *
      * The method will properly escape the table and column names.
      *
-     * @param string $bucket the table to be updated.
+     * @param string $bucketName the table to be updated.
      * @param array $columns the column data (name => value) to be updated.
      * @param array|string $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
@@ -297,7 +297,7 @@ class QueryBuilder extends Object
      * so that they can be bound to the DB command later.
      * @return string the UPDATE SQL
      */
-    public function update($bucket, $columns, $condition, &$params)
+    public function update($bucketName, $condition, $columns, &$params)
     {
         $lines = [];
 
@@ -316,7 +316,7 @@ class QueryBuilder extends Object
             }
         }
 
-        $sql = 'UPDATE ' . $this->db->quotebucketName($bucket) . ' SET ' . implode(', ', $lines);
+        $sql = 'UPDATE ' . $this->db->quotebucketName($bucketName) . ' SET ' . implode(', ', $lines);
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;
@@ -332,7 +332,7 @@ class QueryBuilder extends Object
      *
      * The method will properly escape the table and column names.
      *
-     * @param string $bucket the table where the data will be deleted from.
+     * @param string $bucketName the table where the data will be deleted from.
      * @param array|string $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the binding parameters that will be modified by this method

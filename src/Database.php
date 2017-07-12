@@ -64,6 +64,7 @@ class Database extends Object
         return Yii::createObject([
             'class' => 'matrozov\couchbase\Bucket',
             'database' => $this,
+            'name' => $name,
             'bucket' => $bucket,
         ]);
     }
@@ -79,11 +80,10 @@ class Database extends Object
 
     /**
      * Creates CouchBase command associated with this database.
-     * @param array $document command document contents.
      * @return Command command instance.
      */
-    public function createCommand($document = [])
+    public function createCommand()
     {
-        return $this->connection->createCommand($document, $this->name);
+        return $this->connection->createCommand();
     }
 }

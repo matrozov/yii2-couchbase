@@ -5,8 +5,6 @@
 
 namespace matrozov\couchbase;
 
-use Couchbase\BucketManager;
-use Couchbase\ClusterManager;
 use Couchbase\N1qlQuery;
 use Exception;
 use Yii;
@@ -15,6 +13,11 @@ use yii\db\DataReader;
 
 class Command extends Object
 {
+    const FETCH_ALL = 'fetchAll';
+    const FETCH_ONE = 'fetchOne';
+    const FETCH_SCALAR = 'fetchScalar';
+    const FETCH_COLUMN = 'fetchColumn';
+
     /**
      * @var Connection the CouchBase connection that this command is associated with.
      */
@@ -200,34 +203,32 @@ class Command extends Object
      */
     public function query()
     {
-        return $this->queryInternal('');
+        return $this->queryInternal();
     }
 
     /**
      * Executes the SQL statement and returns ALL rows at once.
-     * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
-     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      * @return array all rows of the query result. Each array element is an array representing a row of data.
      * An empty array is returned if the query results in nothing.
-     * @throws Exception execution failed
+     * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
+     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      */
-    public function queryAll($fetchMode = null)
+    public function queryAll()
     {
-        return $this->queryInternal('fetchAll', $fetchMode);
+        return $this->queryInternal(self::FETCH_ALL);
     }
 
     /**
      * Executes the SQL statement and returns the first row of the result.
      * This method is best used when only the first row of result is needed for a query.
-     * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://php.net/manual/en/pdostatement.setfetchmode.php)
-     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      * @return array|false the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
-     * @throws Exception execution failed
+     * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://php.net/manual/en/pdostatement.setfetchmode.php)
+     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      */
-    public function queryOne($fetchMode = null)
+    public function queryOne()
     {
-        return $this->queryInternal('fetch', $fetchMode);
+        return $this->queryInternal(self::FETCH_ONE);
     }
 
     /**
@@ -239,13 +240,7 @@ class Command extends Object
      */
     public function queryScalar()
     {
-        $result = $this->queryInternal('fetchColumn', 0);
-
-        if (is_resource($result) && get_resource_type($result) === 'stream') {
-            return stream_get_contents($result);
-        } else {
-            return $result;
-        }
+        return $this->queryInternal(self::FETCH_SCALAR);
     }
 
     /**
@@ -257,7 +252,7 @@ class Command extends Object
      */
     public function queryColumn()
     {
-        return $this->queryInternal('fetchAll', \PDO::FETCH_COLUMN);
+        return $this->queryInternal(self::FETCH_COLUMN);
     }
 
     /**
@@ -331,16 +326,16 @@ class Command extends Object
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $table the table to be updated.
+     * @param string $bucket the bucket to be updated.
      * @param array $columns the column data (name => value) to be updated.
      * @param string|array $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
      * @return $this the command object itself
      */
-    public function update($table, $columns, $condition = '', $params = [])
+    public function update($bucket, $condition, $columns, $params = [])
     {
-        $sql = $this->db->getQueryBuilder()->update($table, $columns, $condition, $params);
+        $sql = $this->db->getQueryBuilder()->update($bucket, $condition, $columns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -457,24 +452,76 @@ class Command extends Object
 
     /**
      * Performs the actual DB query of a SQL statement.
+     *
      * @param string $method method of PDOStatement to be called
-     * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
-     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
+     * @param int    $columnIndex
+     *
      * @return mixed the method execution result
      * @throws Exception if the query causes any problem
      * @since 2.0.1 this method is protected (was private before).
      */
-    protected function queryInternal($method, $fetchMode = null)
+    protected function queryInternal($method = null, $columnIndex = 0)
     {
         list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
 
         $this->prepare();
 
+        $result = null;
+
+        var_dump($this->getRawSql());
+
         try {
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
-            
-            $result = $this->db->getBucket()->bucket->query($this->n1ql, true);
-            $result = array_values($result->rows);
+
+            $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
+
+            switch ($method) {
+                case self::FETCH_ALL: {
+                    if ($res->status !== 'success') {
+                        return null;
+                    }
+
+                    $result = $res->rows;
+                } break;
+                case self::FETCH_ONE: {
+                    if ($res->status !== 'success') {
+                        return null;
+                    }
+
+                    if (!empty($res->rows)) {
+                        $result = $res->rows[0];
+                    }
+                } break;
+                case self::FETCH_SCALAR: {
+                    if ($res->status !== 'success') {
+                        return null;
+                    }
+
+                    if (!empty($res->rows)) {
+                        $key = array_keys($res->rows[0])[0];
+
+                        $result = $res[0][$key];
+                    }
+                } break;
+                case self::FETCH_COLUMN: {
+                    if ($res->status !== 'success') {
+                        return null;
+                    }
+
+                    if (!empty($res->rows)) {
+                        $key = array_keys($res->rows[0])[0];
+
+                        $result = [];
+
+                        foreach ($res->rows as $row) {
+                            $result[][$key] = $row[$key];
+                        }
+                    }
+                } break;
+                default: {
+                    $result = $res;
+                }
+            }
 
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
         } catch (\Exception $e) {

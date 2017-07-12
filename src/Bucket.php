@@ -15,17 +15,14 @@ class Bucket extends Object
     public $database;
 
     /**
+     * @var string name of this collection.
+     */
+    public $name;
+
+    /**
      * @var \Couchbase\Bucket CouchBase bucket instance
      */
     public $bucket;
-
-    /**
-     * @return string name of this bucket.
-     */
-    public function getName()
-    {
-        return $this->bucket->getName();
-    }
 
     /**
      * @return string full name of this bucket, including database name.
@@ -44,6 +41,8 @@ class Bucket extends Object
     public function insert($data, $options = [])
     {
         $id = (string)rand(1, 1000000);
+
+        $data['_id'] = $id;
 
         if (!$this->bucket->insert($id, $data, $options)) {
             return null;
@@ -80,9 +79,7 @@ class Bucket extends Object
      */
     public function update($condition, $newData, $options = [])
     {
-        $writeResult = $this->database->createCommand()->update($this->name, $condition, $newData, $options);
-
-        return $writeResult->getModifiedCount() + $writeResult->getUpsertedCount();
+        return $this->database->createCommand()->update($this->name, $condition, $newData, $options)->execute();
     }
 
     /**
@@ -98,6 +95,8 @@ class Bucket extends Object
         }
         else {
             $id = $data['_id'];
+
+            unset($data['_id']);
 
             $this->update(['_id' => $id], ['$set' => $data], $options);
 
