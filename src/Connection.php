@@ -26,8 +26,10 @@ use Yii;
  * @property bool           $enableLogging
  * @property bool           $enableProfiling
  *
- * @property QueryBuilder   $queryBuilder
  * @property Bucket         $bucket
+ * @property bool           $isActive
+ * @property bool           $isManagerActive
+ * @property QueryBuilder   $queryBuilder
  *
  * @package matrozov\couchbase
  */

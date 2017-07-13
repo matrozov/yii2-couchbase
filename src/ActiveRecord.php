@@ -17,6 +17,8 @@ use yii\helpers\StringHelper;
 /**
  * Class ActiveRecord
  *
+ * @property Connection $db
+ *
  * @package matrozov\couchbase
  */
 class ActiveRecord extends BaseActiveRecord
