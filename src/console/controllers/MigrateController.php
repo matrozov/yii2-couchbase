@@ -62,7 +62,7 @@ class MigrateController extends BaseMigrateController
                 }
 
                 if (!$this->db instanceof Connection) {
-                    throw new Exception("The 'db' option must refer to the application component ID of a CouchBase connection.");
+                    throw new Exception("The 'db' option must refer to the application component ID of a Couchbase connection.");
                 }
             }
 

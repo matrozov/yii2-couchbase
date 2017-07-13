@@ -31,7 +31,7 @@ class Command extends Object
     const FETCH_COLUMN = 'fetchColumn';
 
     /**
-     * @var Connection the CouchBase connection that this command is associated with.
+     * @var Connection the Couchbase connection that this command is associated with.
      */
     public $db;
 

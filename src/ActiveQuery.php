@@ -94,8 +94,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Executes query and returns all results as an array.
-     * @param Connection $db the CouchBase connection used to execute the query.
-     * If null, the CouchBase connection returned by [[modelClass]] will be used.
+     * @param Connection $db the Couchbase connection used to execute the query.
+     * If null, the Couchbase connection returned by [[modelClass]] will be used.
      * @return array|ActiveRecord the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
@@ -105,8 +105,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Executes query and returns a single row of result.
-     * @param Connection $db the CouchBase connection used to execute the query.
-     * If null, the CouchBase connection returned by [[modelClass]] will be used.
+     * @param Connection $db the Couchbase connection used to execute the query.
+     * If null, the Couchbase connection returned by [[modelClass]] will be used.
      * @return ActiveRecord|array|null a single row of query result. Depending on the setting of [[asArray]],
      * the query result may be either an array or an ActiveRecord object. Null will be returned
      * if the query results in nothing.
@@ -131,7 +131,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      * to unexpected behavior at some Active Record features, because object will be populated by outdated data.
      * @param array $update update criteria
      * @param array $options list of options in format: optionName => optionValue.
-     * @param Connection $db the CouchBase connection used to execute the query.
+     * @param Connection $db the Couchbase connection used to execute the query.
      * @return ActiveRecord|array|null the original document, or the modified document when $options['new'] is set.
      * Depending on the setting of [[asArray]], the query result may be either an array or an ActiveRecord object.
      * Null will be returned if the query results in nothing.
@@ -151,8 +151,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
-     * Returns the CouchBase bucket for this query.
-     * @param Connection $db CouchBase connection.
+     * Returns the Couchbase bucket for this query.
+     * @param Connection $db Couchbase connection.
      * @return Bucket bucket instance.
      */
     public function getBucket($db = null)
@@ -195,9 +195,9 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Converts the raw query results into the format as specified by this query.
-     * This method is internally used to convert the data fetched from CouchBase
+     * This method is internally used to convert the data fetched from Couchbase
      * into the format as required by this query.
-     * @param array $rows the raw query result from CouchBase
+     * @param array $rows the raw query result from Couchbase
      * @return array the converted query result
      */
     public function populate($rows)

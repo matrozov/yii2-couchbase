@@ -7,7 +7,7 @@
 namespace matrozov\couchbase;
 
 /**
- * Exception represents an exception that is caused by some CouchBase-related operations.
+ * Exception represents an exception that is caused by some Couchbase-related operations.
  *
  * @package matrozov\couchbase
  */
@@ -18,6 +18,6 @@ class Exception extends \yii\base\Exception
      */
     public function getName()
     {
-        return 'CouchBase Exception';
+        return 'Couchbase Exception';
     }
 }

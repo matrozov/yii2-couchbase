@@ -13,7 +13,7 @@ use yii\di\Instance;
 abstract class Migration extends Component implements MigrationInterface
 {
     /**
-     * @var Connection|array|string the CouchBase connection object or the application component ID of the CouchBase connection
+     * @var Connection|array|string the Couchbase connection object or the application component ID of the Couchbase connection
      * that this migration should work with.
      */
     public $db = 'couchbase';

@@ -21,7 +21,7 @@ use yii\db\Expression;
 class Bucket extends Object
 {
     /**
-     * @var Connection CouchBase database instance
+     * @var Connection Couchbase database instance
      */
     public $db;
 
@@ -31,7 +31,7 @@ class Bucket extends Object
     public $name;
 
     /**
-     * @var \Couchbase\Bucket CouchBase bucket instance
+     * @var \Couchbase\Bucket Couchbase bucket instance
      */
     public $bucket;
 
@@ -81,7 +81,7 @@ class Bucket extends Object
 
     /**
      * Updates the rows, which matches given criteria by given data.
-     * Note: for "multi" mode Mongo requires explicit strategy "$set" or "$inc"
+     * Note: for "multi" mode Couchbase requires explicit strategy "$set" or "$inc"
      * to be specified for the "newData". If no strategy is passed "$set" will be used.
      * @param array $condition description of the objects to update.
      * @param array $newData the object with which to update the matching records.

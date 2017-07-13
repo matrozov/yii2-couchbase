@@ -24,8 +24,8 @@ use yii\helpers\StringHelper;
 class ActiveRecord extends BaseActiveRecord
 {
     /**
-     * Returns the Mongo connection used by this AR class.
-     * By default, the "couchbase" application component is used as the Mongo connection.
+     * Returns the Couchbase connection used by this AR class.
+     * By default, the "couchbase" application component is used as the Couchbase connection.
      * You may override this method if you want to use a different database connection.
      * @return Connection the database connection used by this AR class.
      */
@@ -101,7 +101,7 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
-     * Declares the name of the Mongo bucket associated with this AR class.
+     * Declares the name of the Couchbase bucket associated with this AR class.
      *
      * Bucket name can be either a string or array:
      *  - if string considered as the name of the bucket inside the default database.
@@ -119,7 +119,7 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
-     * Return the Mongo bucket instance for this AR class.
+     * Return the Couchbase bucket instance for this AR class.
      * @return Bucket bucket instance.
      */
     public static function getBucket()
@@ -133,7 +133,7 @@ class ActiveRecord extends BaseActiveRecord
      *
      * Note that an array should be returned even for a bucket with single primary key.
      *
-     * @return string[] the primary keys of the associated Mongo bucket.
+     * @return string[] the primary keys of the associated Couchbase bucket.
      */
     public static function primaryKey()
     {
@@ -161,7 +161,7 @@ class ActiveRecord extends BaseActiveRecord
         $rules = $this->rules();
 
         if (empty($rules)) {
-            throw new InvalidConfigException('The attributes() method of CouchBase ActiveRecord has to be implemented by child classes.');
+            throw new InvalidConfigException('The attributes() method of Couchbase ActiveRecord has to be implemented by child classes.');
         }
 
         $attributes = [];
@@ -185,7 +185,7 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
-     * Inserts a row into the associated Mongo bucket using the attribute values of this record.
+     * Inserts a row into the associated Couchbase bucket using the attribute values of this record.
      *
      * This method performs the following steps in order:
      *
@@ -387,7 +387,7 @@ class ActiveRecord extends BaseActiveRecord
      * The comparison is made by comparing the bucket names and the primary key values of the two active records.
      * If one of the records [[isNewRecord|is new]] they are also considered not equal.
      * @param ActiveRecord $record record to compare to
-     * @return bool whether the two active records refer to the same row in the same Mongo bucket.
+     * @return bool whether the two active records refer to the same row in the same Couchbase bucket.
      */
     public function equals($record)
     {
@@ -413,7 +413,7 @@ class ActiveRecord extends BaseActiveRecord
     }
 
     /**
-     * Converts data to array recursively, converting CouchBase JSON objects to readable values.
+     * Converts data to array recursively, converting Couchbase JSON objects to readable values.
      * @param mixed $data the data to be converted into an array.
      * @return array the array representation of the data.
      */

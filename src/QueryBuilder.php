@@ -152,25 +152,17 @@ class QueryBuilder extends Object
      * The method will properly escape the bucket and column names.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param string $id
      * @param array $data the column data (name => value) to be inserted into the bucket or instance
      * They should be bound to the DB command later.
      * @return string the INSERT SQL
      */
-    public function insert($bucketName, $id = null, $data)
+    public function insert($bucketName, $data)
     {
         $bucketName = $this->db->quoteBucketName($bucketName);
 
-        if ($id) {
-            $id = $this->db->quoteValue($id);
-        }
-        else {
-            $id = 'UUID()';
-        }
-
         $data = Json::encode($data);
 
-        return "INSERT INTO $bucketName (KEY, VALUE) VALUES ($id, $data) RETURNING META().id";
+        return "INSERT INTO $bucketName (KEY, VALUE) VALUES (UUID(), $data) " . $this->buildReturning([new Expression('META().id')]);
     }
 
     /**
@@ -211,7 +203,7 @@ class QueryBuilder extends Object
 
         return 'INSERT INTO ' . $this->db->quotebucketName($bucketName)
             . ' (KEY, VALUE) VALUES ' . implode(', VALUES ', $values)
-            . ' RETURNING META().id';
+            . ' ' . $this->buildReturning([new Expression('META().id')]);
     }
 
     /**

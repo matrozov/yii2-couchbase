@@ -52,12 +52,12 @@ class Connection extends Component
     public $dsn;
 
     /**
-     * @var string CouchBase manager username
+     * @var string Couchbase manager username
      */
     public $managerUserName;
 
     /**
-     * @var string CouchBase manager password
+     * @var string Couchbase manager password
      */
     public $managerPassword;
 
@@ -74,12 +74,12 @@ class Connection extends Component
     public $defaultBucket = 'default';
 
     /**
-     * @var Cluster CouchBase driver cluster.
+     * @var Cluster Couchbase driver cluster.
      */
     public $cluster;
 
     /**
-     * @var ClusterManager CouchBase cluster manager driver.
+     * @var ClusterManager Couchbase cluster manager driver.
      */
     public $manager;
 
@@ -117,12 +117,12 @@ class Connection extends Component
     private $_builder;
 
     /**
-     * Returns the CouchBase bucket with the given name.
+     * Returns the Couchbase bucket with the given name.
      * @param string|array $name bucket name. If string considered as the name of the bucket
      * inside the default database. If array - first element considered as the name of the database,
      * second - as name of bucket inside that database
      * @param string $password bucket password
-     * @return Bucket CouchBase basket instance.
+     * @return Bucket Couchbase basket instance.
      */
     public function getBucket($name = null, $password = null)
     {
@@ -175,8 +175,8 @@ class Connection extends Component
     }
 
     /**
-     * Returns a value indicating whether the CouchBase connection is established.
-     * @return bool whether the CouchBase connection is established
+     * Returns a value indicating whether the Couchbase connection is established.
+     * @return bool whether the Couchbase connection is established
      */
     public function getIsActive()
     {
@@ -184,9 +184,9 @@ class Connection extends Component
     }
 
     /**
-     * Returns a value indicating whether the CouchBase connection is established
+     * Returns a value indicating whether the Couchbase connection is established
      * and you has administration privilege.
-     * @return bool whether the CouchBase connection is established and has privilege.
+     * @return bool whether the Couchbase connection is established and has privilege.
      */
     public function getIsManagerActive()
     {
@@ -194,8 +194,8 @@ class Connection extends Component
     }
 
     /**
-     * Establishes a CouchBase connection.
-     * It does nothing if a CouchBase connection has already been established.
+     * Establishes a Couchbase connection.
+     * It does nothing if a Couchbase connection has already been established.
      * @throws Exception if connection fails
      */
     public function open()
@@ -208,7 +208,7 @@ class Connection extends Component
             throw new InvalidConfigException($this->className() . '::dsn cannot be empty.');
         }
 
-        $token = 'Opening CouchBase connection: ' . $this->dsn;
+        $token = 'Opening Couchbase connection: ' . $this->dsn;
 
         try {
             Yii::trace($token, __METHOD__);
@@ -241,7 +241,7 @@ class Connection extends Component
             return;
         }
 
-        Yii::trace('Closing CouchBase connection: ' . $this->dsn, __METHOD__);
+        Yii::trace('Closing Couchbase connection: ' . $this->dsn, __METHOD__);
 
         $this->cluster = null;
         $this->manager = null;
