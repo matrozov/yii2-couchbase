@@ -172,7 +172,12 @@ class MigrateController extends BaseMigrateController
             $this->db->getBucket($this->migrationBucket);
         }
         catch (Exception $e) {
-            $this->db->createBucket($this->migrationBucket);
+            if (($e->getPrevious() instanceof \Couchbase\Exception) && ($e->getPrevious()->getCode() == 2)) {
+                $this->db->createBucket($this->migrationBucket);
+            }
+            else {
+                throw $e;
+            }
         }
 
         $row = (new Query)->select(['version'])

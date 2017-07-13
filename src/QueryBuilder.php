@@ -106,10 +106,12 @@ class QueryBuilder extends Object
             $this->buildWhere($query->where, $params),
             $this->buildGroupBy($query->groupBy),
             $this->buildHaving($query->having, $params),
+            $this->buildOrderBy($query->orderBy),
+            $this->buildLimitOffset($query->limit, $query->offset),
+            $this->buildReturning($query->returning),
         ];
 
         $sql = implode($this->separator, array_filter($clauses));
-        $sql = $this->buildOrderByAndLimit($sql, $query->orderBy, $query->limit, $query->offset);
 
         if (!empty($query->orderBy)) {
             foreach ($query->orderBy as $expression) {
@@ -571,31 +573,6 @@ class QueryBuilder extends Object
     }
 
     /**
-     * Builds the ORDER BY and LIMIT/OFFSET clauses and appends them to the given SQL.
-     * @param string $sql the existing SQL (without ORDER BY/LIMIT/OFFSET)
-     * @param array $orderBy the order by columns. See [[Query::orderBy]] for more details on how to specify this parameter.
-     * @param int $limit the limit number. See [[Query::limit]] for more details.
-     * @param int $offset the offset number. See [[Query::offset]] for more details.
-     * @return string the SQL completed with ORDER BY/LIMIT/OFFSET (if any)
-     */
-    public function buildOrderByAndLimit($sql, $orderBy, $limit, $offset)
-    {
-        $orderBy = $this->buildOrderBy($orderBy);
-
-        if ($orderBy !== '') {
-            $sql .= $this->separator . $orderBy;
-        }
-
-        $limit = $this->buildLimit($limit, $offset);
-
-        if ($limit !== '') {
-            $sql .= $this->separator . $limit;
-        }
-
-        return $sql;
-    }
-
-    /**
      * @param array $columns
      * @return string the ORDER BY clause built from [[Query::$orderBy]].
      */
@@ -624,7 +601,7 @@ class QueryBuilder extends Object
      * @param int $offset
      * @return string the LIMIT and OFFSET clauses
      */
-    public function buildLimit($limit, $offset)
+    public function buildLimitOffset($limit, $offset)
     {
         $sql = '';
 
@@ -1186,5 +1163,27 @@ class QueryBuilder extends Object
 
             return "$column $operator $phName";
         }
+    }
+
+    /**
+     * @param array $columns
+     * @return string the RETURNING clause
+     */
+    public function buildReturning($columns)
+    {
+        if (empty($columns)) {
+            return '';
+        }
+
+        foreach ($columns as $i => $column) {
+            if ($column instanceof Expression) {
+                $columns[$i] = $column->expression;
+            }
+            else {
+                $columns[$i] = $this->db->quoteColumnName($column);
+            }
+        }
+
+        return 'RETURNING ' . implode(', ', $columns);
     }
 }

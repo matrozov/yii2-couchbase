@@ -1,5 +1,5 @@
-CouchBase Extension for Yii2 (alpha, not tested)
-================================================
+CouchBase Extension for Yii2 (alpha, not fully tested)
+======================================================
 
 This extension provides the [CouchBase](https://couchbase.com) integration for the [Yii framework 2.0](http://www.yiiframework.com) with ActiveRecord and Migration supports.
 
