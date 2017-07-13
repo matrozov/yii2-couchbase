@@ -1,0 +1,45 @@
+CouchBase Extension for Yii2
+============================
+
+This extension provides the [CouchBase](https://couchbase.com) ingtegration for the [Yii framework 2.0](http://www.yiiframework.com).
+
+For license information check the [LICENSE](LICENSE.md)-file.
+
+Installation
+------------
+
+This extension requires [CouchBase PHP Extension](https://developer.couchbase.com/documentation/server/current/sdk/php/start-using-sdk.html) version 2.3 or higher.
+
+This extension requires CouchBase server version 4.6 or higher.
+
+The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
+
+Either run
+```
+php composer.phar require --prefer-dist matrozov/yii2-couchbase
+```
+
+or add
+
+```
+"matrozov/yii2-couchbase": "dev-master"
+```
+
+to the require section of your composer.json.
+
+Configuration
+-------------
+
+To use this extension, simply add the following code in your application configuration:
+
+```php
+return [
+    //....
+    'components' => [
+        'couchbase' => [
+            'class' => '\matrozov\couchbase\Connection',
+            'dsn' => 'couchbase://localhost:11210',
+        ],
+    ],
+];
+```
