@@ -416,7 +416,6 @@ class ActiveRecord extends BaseActiveRecord
      * Converts data to array recursively, converting CouchBase JSON objects to readable values.
      * @param mixed $data the data to be converted into an array.
      * @return array the array representation of the data.
-     * @since 2.1
      */
     private function toArrayInternal($data)
     {

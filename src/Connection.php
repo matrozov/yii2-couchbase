@@ -143,17 +143,18 @@ class Connection extends Component
      * @param string $name     bucket name.
      * @param string $password bucket password.
      *
-     * @return Bucket bucket instance.
+     * @return Bucket|null bucket instance.
      * @throws Exception
      */
     protected function selectBucket($name, $password = '')
     {
         $this->open();
 
-        $bucket = $this->cluster->openBucket($name, $password);
-
-        if (!$bucket) {
-            throw new Exception();
+        try {
+            $bucket = $this->cluster->openBucket($name, $password);
+        }
+        catch (\Exception $e) {
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
 
         return Yii::createObject([

@@ -282,16 +282,14 @@ class Command extends Object
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $bucket the bucket that new rows will be inserted into.
-     * @param array|Query $columns the column data (name => value) to be inserted into the bucket or instance
-     * of [[Query]] to perform INSERT INTO ... SELECT SQL statement.
-     * Passing of [[Query]] is available since version 2.0.11.
+     * @param string $bucketName the bucket that new rows will be inserted into.
+     * @param array $columns the column data (name => value) to be inserted into the bucket or instance
      * @return $this the command object itself
      */
-    public function insert($bucket, $columns)
+    public function insert($bucketName, $columns)
     {
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insert($bucket, $columns, $params);
+        $sql = $this->db->getQueryBuilder()->insert($bucketName, $columns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -338,16 +336,16 @@ class Command extends Object
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $bucket the bucket to be updated.
+     * @param string $bucketName the bucket to be updated.
      * @param array $columns the column data (name => value) to be updated.
      * @param string|array $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
      * @return $this the command object itself
      */
-    public function update($bucket, $condition, $columns, $params = [])
+    public function update($bucketName, $condition, $columns, $params = [])
     {
-        $sql = $this->db->getQueryBuilder()->update($bucket, $condition, $columns, $params);
+        $sql = $this->db->getQueryBuilder()->update($bucketName, $condition, $columns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
