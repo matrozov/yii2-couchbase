@@ -41,6 +41,7 @@ abstract class Migration extends Component implements MigrationInterface
         echo "    > execute N1QL: $sql ...";
 
         $time = microtime(true);
+
         $this->db->createCommand($sql)->bindValues($params)->execute();
 
         echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
@@ -49,7 +50,62 @@ abstract class Migration extends Component implements MigrationInterface
 
     // TODO:FixIt many other functions
 
-    
+    /**
+     * @param string      $bucketName
+     * @param string|null $indexName name of primary index (optional)
+     * @param array       $options
+     */
+    public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
+    {
+        $this->beginProfile($token = "    > create primary index $bucketName ...");
+
+        $this->db->createCommand()->createPrimaryIndex($bucketName, $indexName, $options)->execute();
+
+        $this->endProfile($token);
+    }
+
+    /**
+     * @param string $bucketName
+     */
+    public function dropPrimaryIndex($bucketName)
+    {
+        $this->beginProfile($token = "    > drop index $bucketName ...");
+
+        $this->db->createCommand()->dropPrimaryIndex($bucketName)->execute();
+
+        $this->endProfile($token);
+    }
+
+    /**
+     * @param string     $bucketName
+     * @param string     $indexName
+     * @param array      $columns
+     * @param array|null $condition
+     * @param array      $params
+     * @param array      $options
+     */
+    public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
+    {
+        $this->beginProfile($token = "    > create index $bucketName.$indexName ...");
+
+        $this->db->createCommand()->createIndex($bucketName, $indexName, $columns, $condition, $params, $options)->execute();
+
+        $this->endProfile($token);
+    }
+
+    /**
+     * @param string $bucketName
+     * @param string $indexName
+     */
+    public function dropIndex($bucketName, $indexName)
+    {
+        $this->beginProfile($token = "    > drop index $bucketName.$indexName ...");
+
+        $this->db->createCommand()->dropIndex($bucketName, $indexName)->execute();
+
+        $this->endProfile($token);
+    }
+
     /**
      * Creates new bucket with the specified options.
      * @param string $bucketName name of the bucket

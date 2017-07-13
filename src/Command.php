@@ -378,30 +378,65 @@ class Command extends Object
     }
 
     /**
-     * Creates a SQL command for creating a new index.
-     * @param string $name the name of the index. The name will be properly quoted by the method.
-     * @param string $bucketName the bucket that the new index will be created for. The bucket name will be properly quoted by the method.
-     * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
-     * by commas. The column names will be properly quoted by the method.
-     * @param bool $unique whether to add UNIQUE constraint on the created index.
+     * Create a SQL command for creating a new primary index.
+     *
+     * @param string      $bucketName
+     * @param string|null $indexName name of primary index (optional)
+     * @param array       $options
+     *
      * @return $this the command object itself
      */
-    public function createIndex($name, $bucketName, $columns, $unique = false)
+    public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
     {
-        $sql = $this->db->getQueryBuilder()->createIndex($name, $bucketName, $columns, $unique);
+        $sql = $this->db->getQueryBuilder()->createPrimaryIndex($bucketName, $indexName, $options);
+
+        return $this->setSql($sql);
+    }
+
+    /**
+     * Create a SQL command for dropping an unnamed primary index.
+     *
+     * @param string $bucketName
+     *
+     * @return $this the command object itself
+     */
+    public function dropPrimaryIndex($bucketName)
+    {
+        $sql = $this->db->getQueryBuilder()->dropPrimaryIndex($bucketName);
+
+        return $this->setSql($sql);
+    }
+
+    /**
+     * Creates a SQL command for creating a new index.
+     *
+     * @param string     $bucketName
+     * @param string     $indexName
+     * @param array      $columns
+     * @param array|null $condition
+     * @param array      $params
+     * @param array      $options
+     *
+     * @return $this the command object itself
+     */
+    public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
+    {
+        $sql = $this->db->getQueryBuilder()->createIndex($bucketName, $indexName, $columns, $condition, $params, $options);
 
         return $this->setSql($sql);
     }
 
     /**
      * Creates a SQL command for dropping an index.
-     * @param string $name the name of the index to be dropped. The name will be properly quoted by the method.
-     * @param string $bucketName the bucket whose index is to be dropped. The name will be properly quoted by the method.
+     *
+     * @param string $bucketName
+     * @param string $indexName
+     *
      * @return $this the command object itself
      */
-    public function dropIndex($name, $bucketName)
+    public function dropIndex($bucketName, $indexName)
     {
-        $sql = $this->db->getQueryBuilder()->dropIndex($name, $bucketName);
+        $sql = $this->db->getQueryBuilder()->dropIndex($bucketName, $indexName);
 
         return $this->setSql($sql);
     }
