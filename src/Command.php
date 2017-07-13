@@ -132,7 +132,7 @@ class Command extends Object
             $this->n1ql->namedParams($this->params);
         }
         catch (\Exception $e) {
-            throw new Exception();
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
@@ -438,7 +438,7 @@ class Command extends Object
             $profile and Yii::endProfile($rawSql, __METHOD__);
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
-            throw $e;
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
@@ -539,7 +539,7 @@ class Command extends Object
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
-            throw $e;
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
 
         if (isset($cache, $cacheKey, $info)) {
