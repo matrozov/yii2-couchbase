@@ -10,6 +10,7 @@ use yii\base\InvalidParamException;
 use yii\base\Object;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
 
 class QueryBuilder extends Object
 {
@@ -332,7 +333,7 @@ class QueryBuilder extends Object
      *
      * The method will properly escape the table and column names.
      *
-     * @param string $bucketName the table where the data will be deleted from.
+     * @param string $bucketName the bucket where the data will be deleted from.
      * @param array|string $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the binding parameters that will be modified by this method
@@ -348,28 +349,95 @@ class QueryBuilder extends Object
     }
 
     /**
-     * Builds a SQL statement for creating a new index.
+     * Builds a SQL statement for creating a new primary index.
      *
      * @param string      $bucketName
-     * @param string|null $indexName
+     * @param string|null $indexName name of primary index (optional)
+     * @param array       $options
+     *
+     * @return string the CREATE PRIMARY INDEX SQL
+     */
+    public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
+    {
+        $bucketName = $this->db->quoteBucketName($bucketName);
+
+        if ($indexName) {
+            $indexName  = $this->db->quoteColumnName($indexName);
+        }
+
+        $sql = "CREATE PRIMARY INDEX $indexName ON $bucketName";
+
+        if (!empty($options)) {
+            $sql .= ' WITH ' . Json::encode($options);
+        }
+
+        return $sql;
+    }
+
+    /**
+     * Builds a SQL statement for dropping an unnamed primary index.
+     *
+     * @param string $bucketName
+     *
+     * @return string the DROP PRIMARY INDEX SQL
+     */
+    public function dropPrimaryIndex($bucketName)
+    {
+        $bucketName = $this->db->quoteBucketName($bucketName);
+
+        return "DROP PRIMARY INDEX $bucketName";
+    }
+
+    /**
+     * Builds a SQL statement for creating a new index.
+     *
+     * @param string     $bucketName
+     * @param string     $indexName
+     * @param array      $columns
+     * @param array|null $condition
+     * @param array      $params
+     * @param array      $options
      *
      * @return string the CREATE INDEX SQL
      */
-    public function createIndex($bucketName, $indexName = null)
+    public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
     {
-        if (!$indexName) {
-            $indexName = 'idx_' . $bucketName;
+        $bucketName = $this->db->quoteBucketName($bucketName);
+        $indexName  = $this->db->quoteColumnName($indexName);
+
+        foreach ($columns as $i => $column) {
+            if ($column instanceof Expression) {
+                $columns[$i] = $column->expression;
+            }
+            else {
+                $columns[$i] = $this->db->quoteColumnName($column);
+            }
         }
 
-        return "CREATE INDEX $indexName ON $bucketName";
+        $sql  = "CREATE INDEX $indexName ON $bucketName (" . implode(', ', $columns) . ")";
+        $sql .= $this->separator . $this->buildWhere($condition, $params);
+
+        if (!empty($options)) {
+            $sql .= ' WITH ' . Json::encode($options);
+        }
+
+        return $sql;
     }
 
     /**
      * Builds a SQL statement for dropping an index.
+     *
+     * @param string $bucketName
+     * @param string $indexName
+     *
+     * @return string the DROP INDEX SQL
      */
-    public function dropIndex()
+    public function dropIndex($bucketName, $indexName)
     {
-        //TODO: Drop index
+        $bucketName = $this->db->quoteBucketName($bucketName);
+        $indexName  = $this->db->quoteColumnName($indexName);
+
+        return "DROP INDEX $bucketName.$indexName";
     }
 
     /**
