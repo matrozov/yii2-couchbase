@@ -141,7 +141,7 @@ class QueryBuilder extends Object
      * For example,
      *
      * ```php
-     * $sql = $queryBuilder->insert('user', [
+     * $sql = $queryBuilder->insert('user', 'my-new-id', [
      *     'name' => 'Sam',
      *     'age' => 30,
      * ], $params);
@@ -168,7 +168,7 @@ class QueryBuilder extends Object
 
         $data = Json::encode($data);
 
-        return "INSERT INTO $bucketName (KEY, VALUE) VALUES ($id, $data)";
+        return "INSERT INTO $bucketName (KEY, VALUE) VALUES ($id, $data) RETURNING META().id";
     }
 
     /**
@@ -208,7 +208,8 @@ class QueryBuilder extends Object
         }
 
         return 'INSERT INTO ' . $this->db->quotebucketName($bucketName)
-            . ' (KEY, VALUE) VALUES ' . implode(', VALUES ', $values);
+            . ' (KEY, VALUE) VALUES ' . implode(', VALUES ', $values)
+            . ' RETURNING META().id';
     }
 
     /**

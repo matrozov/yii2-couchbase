@@ -11,6 +11,7 @@ use Couchbase\ClusterManager;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use Yii;
+use yii\db\Expression;
 
 /**
  * Class Connection
@@ -402,5 +403,14 @@ class Connection extends Component
         }
 
         return $this->_builder;
+    }
+
+    /**
+     * Create new ID from UUID()
+     * @return string id of bucket
+     */
+    public function createId()
+    {
+        return (new Query)->select(new Expression('UUID()'))->scalar($this);
     }
 }

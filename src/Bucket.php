@@ -53,7 +53,7 @@ class Bucket extends Object
      */
     public function insert($data, $options = [])
     {
-        $id = (new Query)->select(new Expression('UUID()'))->scalar($this->db);
+        $id = $this->db->createId();
 
         if (!$this->bucket->insert($id, $data, $options)) {
             return null;
