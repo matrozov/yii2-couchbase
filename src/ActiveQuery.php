@@ -1,6 +1,7 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
@@ -9,6 +10,13 @@ use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
 use yii\db\ActiveRelationTrait;
 
+/**
+ * Class ActiveQuery
+ *
+ * @property Bucket $bucket
+ *
+ * @package matrozov\couchbase
+ */
 class ActiveQuery extends Query implements ActiveQueryInterface
 {
     use ActiveQueryTrait;
@@ -168,6 +176,17 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
+     * @return string bucket name
+     */
+    protected function getBucketName()
+    {
+        /* @var $modelClass ActiveRecord */
+        $modelClass = $this->modelClass;
+
+        return $modelClass::bucketName();
+    }
+
+    /**
      * Converts the raw query results into the format as specified by this query.
      * This method is internally used to convert the data fetched from CouchBase
      * into the format as required by this query.
@@ -193,16 +212,5 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         }
 
         return $models;
-    }
-
-    /**
-     * @return string bucket name
-     */
-    protected function getBucketName()
-    {
-        /* @var $modelClass ActiveRecord */
-        $modelClass = $this->modelClass;
-
-        return $modelClass::bucketName();
     }
 }

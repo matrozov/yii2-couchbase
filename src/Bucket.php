@@ -1,19 +1,28 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
 
-use Exception;
 use yii\base\Object;
 
+/**
+ * Class Bucket
+ *
+ * @property Connection        $db
+ * @property string            $name
+ * @property \Couchbase\Bucket $bucket
+ *
+ * @package matrozov\couchbase
+ */
 class Bucket extends Object
 {
     /**
-     * @var Database CouchBase database instance
+     * @var Connection CouchBase database instance
      */
-    public $database;
+    public $db;
 
     /**
      * @var string name of this collection.
@@ -26,21 +35,13 @@ class Bucket extends Object
     public $bucket;
 
     /**
-     * @return string full name of this bucket, including database name.
-     */
-    public function getFullName()
-    {
-        return $this->database->name . '.' . $this->name;
-    }
-
-    /**
      * Drops this bucket.
      * @throws Exception on failure.
      * @return bool whether the operation successful.
      */
     public function drop()
     {
-        return $this->database->dropBucket($this->name);
+        return $this->db->dropBucket($this->name);
     }
 
     /**
@@ -70,7 +71,7 @@ class Bucket extends Object
      */
     public function batchInsert($rows, $options = [])
     {
-        $insertedIds = $this->database->createCommand()->batchInsert($this->name, $rows, $options);
+        $insertedIds = $this->db->createCommand()->batchInsert($this->name, $rows, $options);
 
         foreach ($rows as $key => $row) {
             $rows[$key]['_id'] = $insertedIds[$key];
@@ -90,7 +91,7 @@ class Bucket extends Object
      */
     public function update($condition, $newData, $options = [])
     {
-        return $this->database->createCommand()->update($this->name, $condition, $newData, $options)->execute();
+        return $this->db->createCommand()->update($this->name, $condition, $newData, $options)->execute();
     }
 
     /**
@@ -123,7 +124,7 @@ class Bucket extends Object
      */
     public function remove($condition = [], $options = [])
     {
-        return $this->database->createCommand()->delete($this->name, $condition, $options)->execute();
+        return $this->db->createCommand()->delete($this->name, $condition, $options)->execute();
     }
 
     /**
@@ -134,6 +135,6 @@ class Bucket extends Object
      */
     public function count($condition = [], $options = [])
     {
-        return $this->database->createCommand()->count($this->name, $condition, $options);
+        return $this->db->createCommand()->count($this->name, $condition, $options);
     }
 }

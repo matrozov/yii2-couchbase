@@ -1,6 +1,7 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
@@ -13,6 +14,11 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
+/**
+ * Class ActiveRecord
+ *
+ * @package matrozov\couchbase
+ */
 class ActiveRecord extends BaseActiveRecord
 {
     /**

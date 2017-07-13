@@ -1,17 +1,25 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
 
-use Exception;
 use yii\base\InvalidParamException;
 use yii\base\Object;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
+/**
+ * Class QueryBuilder
+ *
+ * @property Connection $connection the database connection.
+ * @property string $separator the separator between different fragment of a SQL statement.
+ *
+ * @package matrozov\couchbase
+ */
 class QueryBuilder extends Object
 {
     /**

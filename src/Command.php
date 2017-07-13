@@ -1,16 +1,28 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
 
 use Couchbase\N1qlQuery;
-use Exception;
 use Yii;
 use yii\base\Object;
 use yii\db\DataReader;
 
+/**
+ * Class Command
+ *
+ * @property Connection $db
+ * @property array      $params
+ * @property N1qlQuery  $n1ql
+ *
+ * @property string     $sql
+ * @property string     $rawSql
+ *
+ * @package matrozov\couchbase
+ */
 class Command extends Object
 {
     const FETCH_ALL = 'fetchAll';
@@ -33,7 +45,7 @@ class Command extends Object
     /**
      * @var N1qlQuery
      */
-    private $n1ql;
+    public $n1ql;
 
     /**
      * @var string the N1QL statement that this command represents
@@ -54,7 +66,7 @@ class Command extends Object
         if ($sql !== $this->_sql) {
             $this->cancel();
 
-            $this->_sql = $this->db->quoteSql($sql);
+            $this->_sql = $this->connection->quoteSql($sql);
             $this->params = [];
         }
 
@@ -113,7 +125,7 @@ class Command extends Object
     {
         $sql = $this->getSql();
 
-        $this->db->open();
+        $this->connection->open();
 
         try {
             $this->n1ql = N1qlQuery::fromString($sql);
@@ -399,7 +411,7 @@ class Command extends Object
      * This method should only be used for executing non-query SQL statement, such as `INSERT`, `DELETE`, `UPDATE` SQLs.
      * No result set will be returned.
      * @return int number of rows affected by the execution.
-     * @throws Exception execution failed
+     * @throws \Exception
      */
     public function execute()
     {
@@ -457,8 +469,7 @@ class Command extends Object
      * @param int    $columnIndex
      *
      * @return mixed the method execution result
-     * @throws Exception if the query causes any problem
-     * @since 2.0.1 this method is protected (was private before).
+     * @throws \Exception
      */
     protected function queryInternal($method = null, $columnIndex = 0)
     {

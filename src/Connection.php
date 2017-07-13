@@ -1,17 +1,36 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
 
 use Couchbase\Cluster;
 use Couchbase\ClusterManager;
-use Exception;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use Yii;
 
+/**
+ * Class Connection
+ *
+ * @property string         $dsn
+ * @property string|null    $managerUserName
+ * @property string|null    $managerPassword
+ * @property string         $bucketPrefix
+ * @property string         $defaultBucket
+ * @property Cluster        $cluster
+ * @property ClusterManager $manager
+ * @property string         $commandClass
+ * @property bool           $enableLogging
+ * @property bool           $enableProfiling
+ *
+ * @property QueryBuilder   $queryBuilder
+ * @property Bucket         $bucket
+ *
+ * @package matrozov\couchbase
+ */
 class Connection extends Component
 {
     /**
@@ -85,82 +104,14 @@ class Connection extends Component
     public $enableProfiling = true;
 
     /**
-     * @var string name of the CouchBase database to use by default.
-     * If this field left blank, connection instance will attempt to determine if from
-     * [[dsn]] automatically, if needed.
+     * @var Bucket[] list of baskets.
      */
-    private $_defaultDatabaseName;
-
-    /**
-     * @var Database[] list of CouchBase databases.
-     */
-    private $_databases = [];
+    private $_buckets = [];
 
     /**
      * @var QueryBuilder
      */
     private $_builder;
-
-    /**
-     * Sets default database name.
-     * @param string $name default database name.
-     */
-    public function setDefaultDatabaseName($name)
-    {
-        $this->_defaultDatabaseName = $name;
-    }
-
-    /**
-     * Returns default database name, if it is not set,
-     * attempts to determine it from [[dsn]] value.
-     * @return string default database name
-     * @throws \yii\base\InvalidConfigException if unable to determine default database name.
-     */
-    public function getDefaultDatabaseName()
-    {
-        if ($this->_defaultDatabaseName === null) {
-            if (preg_match('#^couchbase://([^:]+)#', $this->dsn, $matches)) {
-                $this->_defaultDatabaseName = $matches[1];
-            }
-            else {
-                throw new InvalidConfigException('Unable to determine default database name from dsn.');
-            }
-        }
-
-        return $this->_defaultDatabaseName;
-    }
-
-    /**
-     * Returns the CouchBase database with the given name.
-     * @param string|null $name database name, if null default one will be used.
-     * @return Database database instance.
-     */
-    public function getDatabase($name = null)
-    {
-        if ($name === null) {
-            $name = $this->getDefaultDatabaseName();
-        }
-
-        if (!array_key_exists($name, $this->_databases)) {
-            $this->_databases[$name] = $this->selectDatabase($name);
-        }
-
-        return $this->_databases[$name];
-    }
-
-    /**
-     * Selects the database with given name.
-     * @param string $name database name.
-     * @return Database database instance.
-     */
-    protected function selectDatabase($name)
-    {
-        return Yii::createObject([
-            'class' => 'matrozov\couchbase\Database',
-            'name' => $name,
-            'connection' => $this,
-        ]);
-    }
 
     /**
      * Returns the CouchBase bucket with the given name.
@@ -176,7 +127,47 @@ class Connection extends Component
             $name = $this->defaultBucket;
         }
 
-        return $this->getDatabase()->getBucket($name, $password);
+        if (!array_key_exists($name, $this->_buckets)) {
+            $this->_buckets[$name] = $this->selectBucket($name, $password);
+        }
+
+        return $this->_buckets[$name];
+    }
+
+    /**
+     * Selects bucket with given name and password.
+     *
+     * @param string $name     bucket name.
+     * @param string $password bucket password.
+     *
+     * @return Bucket bucket instance.
+     * @throws \Exception
+     */
+    protected function selectBucket($name, $password = '')
+    {
+        $this->open();
+
+        $bucket = $this->cluster->openBucket($name, $password);
+
+        if (!$bucket) {
+            throw new \Exception();
+        }
+
+        return Yii::createObject([
+            'class' => 'matrozov\couchbase\Bucket',
+            'database' => $this,
+            'name' => $name,
+            'bucket' => $bucket,
+        ]);
+    }
+
+    /**
+     * Clears internal buckets lists.
+     * This method can be used to break cycle references between [[Connection]] and [[Bucket]] instances.
+     */
+    public function clearBuckets()
+    {
+        $this->_buckets = [];
     }
 
     /**

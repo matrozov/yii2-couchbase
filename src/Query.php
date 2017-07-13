@@ -1,12 +1,18 @@
 <?php
 /**
- *
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
  */
 
 namespace matrozov\couchbase;
 
 use Yii;
 
+/**
+ * Class Query
+ *
+ * @package matrozov\couchbase
+ */
 class Query extends \yii\db\Query
 {
     /**
