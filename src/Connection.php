@@ -73,11 +73,6 @@ class Connection extends Component
     public $defaultBucket = 'default';
 
     /**
-     * @var string Bucket for AR counters
-     */
-    public $counterBucket = 'counter';
-
-    /**
      * @var Cluster CouchBase driver cluster.
      */
     public $cluster;
@@ -275,12 +270,12 @@ class Connection extends Component
     }
 
     /**
-     * Quotes a table name for use in a query.
-     * If the table name contains schema prefix, the prefix will also be properly quoted.
-     * If the table name is already quoted or contains special characters including '(', '[[' and '{{',
+     * Quotes a bucket name for use in a query.
+     * If the bucket name contains schema prefix, the prefix will also be properly quoted.
+     * If the bucket name is already quoted or contains special characters including '(', '[[' and '{{',
      * then this method will do nothing.
      * @param string $bucketName bucket name
-     * @return string the properly quoted table name
+     * @return string the properly quoted bucket name
      */
     public function quoteBucketName($bucketName)
     {
@@ -301,10 +296,10 @@ class Connection extends Component
     }
 
     /**
-     * Processes a SQL statement by quoting table and column names that are enclosed within double brackets.
-     * Tokens enclosed within double curly brackets are treated as table names, while
+     * Processes a SQL statement by quoting bucket and column names that are enclosed within double brackets.
+     * Tokens enclosed within double curly brackets are treated as bucket names, while
      * tokens enclosed within double square brackets are column names. They will be quoted accordingly.
-     * Also, the percentage character "%" at the beginning or ending of a table name will be replaced
+     * Also, the percentage character "%" at the beginning or ending of a bucket name will be replaced
      * with [[bucketPrefix]].
      * @param string $sql the SQL to be quoted
      * @return string the quoted SQL
@@ -316,7 +311,8 @@ class Connection extends Component
             function ($matches) {
                 if (isset($matches[3])) {
                     return $this->quoteColumnName($matches[3]);
-                } else {
+                }
+                else {
                     return str_replace('%', $this->bucketPrefix, $this->quoteBucketName($matches[2]));
                 }
             },
@@ -344,8 +340,8 @@ class Connection extends Component
     /**
      * Creates new bucket in database associated with this command.s
      *
-     * @param string $bucketName collection name
-     * @param array  $options    collection options in format: "name" => "value"
+     * @param string $bucketName bucket name
+     * @param array  $options    bucket options in format: "name" => "value"
      *
      * @throws Exception
      */
@@ -363,7 +359,7 @@ class Connection extends Component
     /**
      * Drops specified bucket.
      *
-     * @param string $bucketName name of the collection to be dropped.
+     * @param string $bucketName name of the bucket to be dropped.
      *
      * @throws Exception
      */

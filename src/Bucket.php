@@ -7,6 +7,7 @@
 namespace matrozov\couchbase;
 
 use yii\base\Object;
+use yii\db\Expression;
 
 /**
  * Class Bucket
@@ -25,7 +26,7 @@ class Bucket extends Object
     public $db;
 
     /**
-     * @var string name of this collection.
+     * @var string name of this bucket.
      */
     public $name;
 
@@ -52,9 +53,7 @@ class Bucket extends Object
      */
     public function insert($data, $options = [])
     {
-        $id = (string)rand(1, 1000000);
-
-        $data['_id'] = $id;
+        $id = (new Query)->select(new Expression('UUID()'))->scalar($this->db);
 
         if (!$this->bucket->insert($id, $data, $options)) {
             return null;
@@ -117,7 +116,7 @@ class Bucket extends Object
     }
 
     /**
-     * Removes data from the collection.
+     * Removes data from the bucket.
      * @param array $condition description of records to remove.
      * @param array $options list of options in format: optionName => optionValue.
      * @return int|bool number of updated documents or whether operation was successful.
@@ -128,7 +127,7 @@ class Bucket extends Object
     }
 
     /**
-     * Counts records in this collection.
+     * Counts records in this bucket.
      * @param array $condition query condition
      * @param array $options list of options in format: optionName => optionValue.
      * @return int records count.

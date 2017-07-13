@@ -282,10 +282,10 @@ class Command extends Object
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $bucket the table that new rows will be inserted into.
-     * @param array|\yii\db\Query $columns the column data (name => value) to be inserted into the table or instance
-     * of [[yii\db\Query|Query]] to perform INSERT INTO ... SELECT SQL statement.
-     * Passing of [[yii\db\Query|Query]] is available since version 2.0.11.
+     * @param string $bucket the bucket that new rows will be inserted into.
+     * @param array|Query $columns the column data (name => value) to be inserted into the bucket or instance
+     * of [[Query]] to perform INSERT INTO ... SELECT SQL statement.
+     * Passing of [[Query]] is available since version 2.0.11.
      * @return $this the command object itself
      */
     public function insert($bucket, $columns)
@@ -314,14 +314,14 @@ class Command extends Object
      *
      * Also note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $table the table that new rows will be inserted into.
+     * @param string $bucketName the bucket that new rows will be inserted into.
      * @param array $columns the column names
-     * @param array $rows the rows to be batch inserted into the table
+     * @param array $rows the rows to be batch inserted into the bucket
      * @return $this the command object itself
      */
-    public function batchInsert($table, $columns, $rows)
+    public function batchInsert($bucketName, $columns, $rows)
     {
-        $sql = $this->db->getQueryBuilder()->batchInsert($table, $columns, $rows);
+        $sql = $this->db->getQueryBuilder()->batchInsert($bucketName, $columns, $rows);
 
         return $this->setSql($sql);
     }
@@ -360,19 +360,19 @@ class Command extends Object
      * $connection->createCommand()->delete('user', 'status = 0')->execute();
      * ```
      *
-     * The method will properly escape the table and column names.
+     * The method will properly escape the bucket and column names.
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $table the table where the data will be deleted from.
+     * @param string $bucketName the bucket where the data will be deleted from.
      * @param string|array $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
      * @return $this the command object itself
      */
-    public function delete($table, $condition = '', $params = [])
+    public function delete($bucketName, $condition = '', $params = [])
     {
-        $sql = $this->db->getQueryBuilder()->delete($table, $condition, $params);
+        $sql = $this->db->getQueryBuilder()->delete($bucketName, $condition, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -380,15 +380,15 @@ class Command extends Object
     /**
      * Creates a SQL command for creating a new index.
      * @param string $name the name of the index. The name will be properly quoted by the method.
-     * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
+     * @param string $bucketName the bucket that the new index will be created for. The bucket name will be properly quoted by the method.
      * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
      * by commas. The column names will be properly quoted by the method.
      * @param bool $unique whether to add UNIQUE constraint on the created index.
      * @return $this the command object itself
      */
-    public function createIndex($name, $table, $columns, $unique = false)
+    public function createIndex($name, $bucketName, $columns, $unique = false)
     {
-        $sql = $this->db->getQueryBuilder()->createIndex($name, $table, $columns, $unique);
+        $sql = $this->db->getQueryBuilder()->createIndex($name, $bucketName, $columns, $unique);
 
         return $this->setSql($sql);
     }
@@ -396,12 +396,12 @@ class Command extends Object
     /**
      * Creates a SQL command for dropping an index.
      * @param string $name the name of the index to be dropped. The name will be properly quoted by the method.
-     * @param string $table the table whose index is to be dropped. The name will be properly quoted by the method.
+     * @param string $bucketName the bucket whose index is to be dropped. The name will be properly quoted by the method.
      * @return $this the command object itself
      */
-    public function dropIndex($name, $table)
+    public function dropIndex($name, $bucketName)
     {
-        $sql = $this->db->getQueryBuilder()->dropIndex($name, $table);
+        $sql = $this->db->getQueryBuilder()->dropIndex($name, $bucketName);
 
         return $this->setSql($sql);
     }
@@ -458,7 +458,8 @@ class Command extends Object
 
         if (!$this->db->enableProfiling) {
             return [false, isset($rawSql) ? $rawSql : null];
-        } else {
+        }
+        else {
             return [true, isset($rawSql) ? $rawSql : $this->getRawSql()];
         }
     }
@@ -510,7 +511,7 @@ class Command extends Object
                     if (!empty($res->rows)) {
                         $key = array_keys($res->rows[0])[0];
 
-                        $result = $res[0][$key];
+                        $result = $res->rows[0][$key];
                     }
                 } break;
                 case self::FETCH_COLUMN: {
@@ -540,11 +541,6 @@ class Command extends Object
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
-        }
-
-        if (isset($cache, $cacheKey, $info)) {
-            $cache->set($cacheKey, [$result], $info[1], $info[2]);
-            Yii::trace('Saved query result in cache', 'yii\db\Command::query');
         }
 
         return $result;

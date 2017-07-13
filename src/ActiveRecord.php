@@ -166,10 +166,9 @@ class ActiveRecord extends BaseActiveRecord
 
         $attributes = [];
 
-        $pk = static::primaryKey();
-        $pk = reset($pk);
+        $primaryKey = static::primaryKey()[0];
 
-        $attributes[$pk] = true;
+        $attributes[$primaryKey] = true;
 
         foreach ($rules as $rule) {
             if (is_array($rule[0])) {
@@ -258,8 +257,10 @@ class ActiveRecord extends BaseActiveRecord
         $newId = static::getBucket()->insert($values);
 
         if ($newId !== null) {
-            $this->setAttribute('_id', $newId);
-            $values['_id'] = $newId;
+            $primaryKey = static::primaryKey()[0];
+
+            $this->setAttribute($primaryKey, $newId);
+            $values[$primaryKey] = $newId;
         }
 
         $changedAttributes = array_fill_keys(array_keys($values), null);

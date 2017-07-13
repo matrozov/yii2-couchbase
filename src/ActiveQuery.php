@@ -165,7 +165,14 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         }
 
         if ($this->select === null) {
-            $this->select = $db->quoteBucketName($modelClass::bucketName()) . '.*';
+            $bucketName = $db->quoteBucketName($modelClass::bucketName());
+
+            $primaryModel = $this->primaryModel ?: ActiveRecord::className();
+
+            $primaryKey = $primaryModel::primaryKey()[0];
+            $primaryKey = $db->quoteColumnName($primaryKey);
+
+            $this->select = "meta($bucketName).id AS $primaryKey, $bucketName.*";
         }
 
         if ($this->from === null) {
