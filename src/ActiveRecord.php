@@ -221,7 +221,7 @@ class ActiveRecord extends BaseActiveRecord
      * @param array $attributes list of attributes that need to be saved. Defaults to null,
      * meaning all attributes that are loaded will be saved.
      * @return bool whether the attributes are valid and the record is inserted successfully.
-     * @throws \Exception in case insert failed.
+     * @throws Exception in case insert failed.
      */
     public function insert($runValidation = true, $attributes = null)
     {
@@ -340,7 +340,7 @@ class ActiveRecord extends BaseActiveRecord
      * Note that it is possible the number of documents deleted is 0, even though the deletion execution is successful.
      * @throws StaleObjectException if [[optimisticLock|optimistic locking]] is enabled and the data
      * being deleted is outdated.
-     * @throws \Exception in case delete failed.
+     * @throws Exception in case delete failed.
      */
     public function delete()
     {

@@ -73,6 +73,11 @@ class Connection extends Component
     public $defaultBucket = 'default';
 
     /**
+     * @var string Bucket for AR counters
+     */
+    public $counterBucket = 'counter';
+
+    /**
      * @var Cluster CouchBase driver cluster.
      */
     public $cluster;
@@ -143,7 +148,7 @@ class Connection extends Component
      * @param string $password bucket password.
      *
      * @return Bucket bucket instance.
-     * @throws \Exception
+     * @throws Exception
      */
     protected function selectBucket($name, $password = '')
     {
@@ -152,13 +157,13 @@ class Connection extends Component
         $bucket = $this->cluster->openBucket($name, $password);
 
         if (!$bucket) {
-            throw new \Exception();
+            throw new Exception();
         }
 
         return Yii::createObject([
-            'class' => 'matrozov\couchbase\Bucket',
-            'database' => $this,
-            'name' => $name,
+            'class'  => 'matrozov\couchbase\Bucket',
+            'db'     => $this,
+            'name'   => $name,
             'bucket' => $bucket,
         ]);
     }
@@ -194,7 +199,7 @@ class Connection extends Component
     /**
      * Establishes a CouchBase connection.
      * It does nothing if a CouchBase connection has already been established.
-     * @throws \Exception if connection fails
+     * @throws Exception if connection fails
      */
     public function open()
     {
@@ -221,10 +226,11 @@ class Connection extends Component
             $this->initConnection();
 
             Yii::endProfile($token, __METHOD__);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             Yii::endProfile($token, __METHOD__);
 
-            throw new \Exception($e->getMessage(), (int) $e->getCode(), $e);
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
@@ -243,11 +249,7 @@ class Connection extends Component
         $this->cluster = null;
         $this->manager = null;
 
-        foreach ($this->_databases as $database) {
-            $database->clearBuckets();
-        }
-
-        $this->_databases = [];
+        $this->clearBuckets();
     }
 
     /**

@@ -66,7 +66,7 @@ class Command extends Object
         if ($sql !== $this->_sql) {
             $this->cancel();
 
-            $this->_sql = $this->connection->quoteSql($sql);
+            $this->_sql = $this->db->quoteSql($sql);
             $this->params = [];
         }
 
@@ -125,14 +125,14 @@ class Command extends Object
     {
         $sql = $this->getSql();
 
-        $this->connection->open();
+        $this->db->open();
 
         try {
             $this->n1ql = N1qlQuery::fromString($sql);
             $this->n1ql->namedParams($this->params);
         }
         catch (\Exception $e) {
-            throw new \Exception();
+            throw new Exception();
         }
     }
 
@@ -411,7 +411,7 @@ class Command extends Object
      * This method should only be used for executing non-query SQL statement, such as `INSERT`, `DELETE`, `UPDATE` SQLs.
      * No result set will be returned.
      * @return int number of rows affected by the execution.
-     * @throws \Exception
+     * @throws Exception
      */
     public function execute()
     {
@@ -433,7 +433,8 @@ class Command extends Object
             $profile and Yii::endProfile($rawSql, __METHOD__);
 
             return $res;
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             $profile and Yii::endProfile($rawSql, __METHOD__);
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
@@ -469,7 +470,7 @@ class Command extends Object
      * @param int    $columnIndex
      *
      * @return mixed the method execution result
-     * @throws \Exception
+     * @throws Exception
      */
     protected function queryInternal($method = null, $columnIndex = 0)
     {
@@ -478,8 +479,6 @@ class Command extends Object
         $this->prepare();
 
         $result = false;
-
-        var_dump($this->getRawSql());
 
         try {
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
@@ -535,7 +534,8 @@ class Command extends Object
             }
 
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
