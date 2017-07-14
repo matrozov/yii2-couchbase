@@ -162,7 +162,7 @@ class QueryBuilder extends Object
 
         $data = Json::encode($data);
 
-        return "INSERT INTO $bucketName (KEY, VALUE) VALUES (UUID(), $data) " . $this->buildReturning([new Expression('META().id')]);
+        return "INSERT INTO $bucketName (KEY, VALUE) VALUES (UUID(), $data) " . $this->buildReturning([new Expression('META().id AS `_id`')]);
     }
 
     /**
@@ -203,7 +203,7 @@ class QueryBuilder extends Object
 
         return 'INSERT INTO ' . $this->db->quotebucketName($bucketName)
             . ' (KEY, VALUE) VALUES ' . implode(', VALUES ', $values)
-            . ' ' . $this->buildReturning([new Expression('META().id')]);
+            . ' ' . $this->buildReturning([new Expression('META().id AS `_id`')]);
     }
 
     /**

@@ -246,25 +246,29 @@ class Command extends Object
     /**
      * Executes the SQL statement and returns the value of the first column in the first row of data.
      * This method is best used when only a single value is needed for a query.
-     * @return string|null|false the value of the first column in the first row of the query result.
+     *
+     * @param null|string $columnName
+     *
+     * @return false|null|string the value of the first column in the first row of the query result.
      * False is returned if there is no value.
-     * @throws Exception execution failed
      */
-    public function queryScalar()
+    public function queryScalar($columnName = null)
     {
-        return $this->queryInternal(self::FETCH_SCALAR);
+        return $this->queryInternal(self::FETCH_SCALAR, $columnName);
     }
 
     /**
      * Executes the SQL statement and returns the first column of the result.
      * This method is best used when only the first column of result (i.e. the first element in each row)
      * is needed for a query.
+     *
+     * @param null|string $columnName
+     *
      * @return array the first column of the query result. Empty array is returned if the query results in nothing.
-     * @throws Exception execution failed
      */
-    public function queryColumn()
+    public function queryColumn($columnName = null)
     {
-        return $this->queryInternal(self::FETCH_COLUMN);
+        return $this->queryInternal(self::FETCH_COLUMN, $columnName);
     }
 
     /**
@@ -283,15 +287,14 @@ class Command extends Object
      * Note that the created command is not executed until [[execute()]] is called.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $columns the column data (name => value) to be inserted into the bucket or instance
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance
      * @return $this the command object itself
      */
-    public function insert($bucketName, $columns)
+    public function insert($bucketName, $data)
     {
-        $params = [];
-        $sql = $this->db->getQueryBuilder()->insert($bucketName, $columns, $params);
+        $sql = $this->db->getQueryBuilder()->insert($bucketName, $data);
 
-        return $this->setSql($sql)->bindValues($params);
+        return $this->setSql($sql);
     }
 
     /**
@@ -313,13 +316,12 @@ class Command extends Object
      * Also note that the created command is not executed until [[execute()]] is called.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $columns the column names
      * @param array $rows the rows to be batch inserted into the bucket
      * @return $this the command object itself
      */
-    public function batchInsert($bucketName, $columns, $rows)
+    public function batchInsert($bucketName, $rows)
     {
-        $sql = $this->db->getQueryBuilder()->batchInsert($bucketName, $columns, $rows);
+        $sql = $this->db->getQueryBuilder()->batchInsert($bucketName, $rows);
 
         return $this->setSql($sql);
     }
@@ -443,29 +445,27 @@ class Command extends Object
      * Executes the SQL statement.
      * This method should only be used for executing non-query SQL statement, such as `INSERT`, `DELETE`, `UPDATE` SQLs.
      * No result set will be returned.
-     * @return int number of rows affected by the execution.
+     * @return int|bool number of rows affected by the execution.
      * @throws Exception
      */
     public function execute()
     {
-        $sql = $this->getSql();
-
         list($profile, $rawSql) = $this->logQuery(__METHOD__);
 
-        if ($sql == '') {
-            return 0;
-        }
-
         $this->prepare();
+
+        $result = 0;
 
         try {
             $profile and Yii::beginProfile($rawSql, __METHOD__);
 
-            $res = $this->db->getBucket()->bucket->query($this->n1ql);
+            $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
+
+            if ($res->status === 'success') {
+                $result = $res->metrics['mutationCount'];
+            }
 
             $profile and Yii::endProfile($rawSql, __METHOD__);
-
-            return $res;
         }
         catch (\Exception $e) {
             $profile and Yii::endProfile($rawSql, __METHOD__);
@@ -473,6 +473,8 @@ class Command extends Object
             //TODO: FixIt
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
+
+        return $result;
     }
 
     /**
@@ -500,13 +502,13 @@ class Command extends Object
     /**
      * Performs the actual DB query of a SQL statement.
      *
-     * @param string $method method of PDOStatement to be called
-     * @param int    $columnIndex
+     * @param string      $method method of PDOStatement to be called
+     * @param null|string $columnName
      *
      * @return mixed the method execution result
      * @throws Exception
      */
-    protected function queryInternal($method = null, $columnIndex = 0)
+    protected function queryInternal($method = null, $columnName = null)
     {
         list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
 
@@ -519,51 +521,41 @@ class Command extends Object
 
             $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
 
-            switch ($method) {
-                case self::FETCH_ALL: {
-                    if ($res->status !== 'success') {
-                        return false;
-                    }
+            if ($res->status == 'success') {
 
-                    $result = $res->rows;
-                } break;
-                case self::FETCH_ONE: {
-                    if ($res->status !== 'success') {
-                        return false;
-                    }
+                if (!empty($res->rows)) {
+                    switch ($method) {
+                        case self::FETCH_ALL: {
+                            $result = $res->rows;
+                        } break;
+                        case self::FETCH_ONE: {
+                            $result = $res->rows[0];
+                        } break;
+                        case self::FETCH_SCALAR: {
+                            if ($columnName === null) {
+                                $columnName = array_keys($res->rows[0])[0];
+                            }
 
-                    if (!empty($res->rows)) {
-                        $result = $res->rows[0];
-                    }
-                } break;
-                case self::FETCH_SCALAR: {
-                    if ($res->status !== 'success') {
-                        return false;
-                    }
+                            $result = $res->rows[0][$columnName];
+                        } break;
+                        case self::FETCH_COLUMN: {
+                            if ($columnName === null) {
+                                $columnName = array_keys($res->rows[0])[0];
+                            }
 
-                    if (!empty($res->rows)) {
-                        $key = array_keys($res->rows[0])[0];
+                            $result = [];
 
-                        $result = $res->rows[0][$key];
-                    }
-                } break;
-                case self::FETCH_COLUMN: {
-                    if ($res->status !== 'success') {
-                        return false;
-                    }
-
-                    if (!empty($res->rows)) {
-                        $key = array_keys($res->rows[0])[0];
-
-                        $result = [];
-
-                        foreach ($res->rows as $row) {
-                            $result[][$key] = $row[$key];
+                            foreach ($res->rows as $row) {
+                                $result[][$columnName] = $row[$columnName];
+                            }
+                        } break;
+                        default: {
+                            $result = $res;
                         }
                     }
-                } break;
-                default: {
-                    $result = $res;
+                }
+                else {
+                    $result = [];
                 }
             }
 

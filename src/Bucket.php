@@ -48,32 +48,24 @@ class Bucket extends Object
     /**
      * Inserts new data into bucket.
      * @param array|object $data data to be inserted.
-     * @param array $options list of options in format: optionName => optionValue.
      * @return null|int new record ID instance.
      */
-    public function insert($data, $options = [])
+    public function insert($data)
     {
-        $id = $this->db->createId();
-
-        if (!$this->bucket->insert($id, $data, $options)) {
-            return null;
-        }
-
-        return $id;
+        return $this->db->createCommand()->insert($this->name, $data)->queryScalar('_id');
     }
 
     /**
      * Inserts several new rows into bucket.
      * @param array $rows array of arrays or objects to be inserted.
-     * @param array $options list of options in format: optionName => optionValue.
      * @return array inserted data, each row will have "_id" key assigned to it.
      */
-    public function batchInsert($rows, $options = [])
+    public function batchInsert($rows)
     {
-        $insertedIds = $this->db->createCommand()->batchInsert($this->name, $rows, $options);
+        $insertedIds = $this->db->createCommand()->batchInsert($this->name, $rows)->queryColumn('_id');
 
         foreach ($rows as $key => $row) {
-            $rows[$key]['_id'] = $insertedIds[$key];
+            $rows[$key]['_id'] = $insertedIds[$key]['_id'];
         }
 
         return $rows;
@@ -109,7 +101,9 @@ class Bucket extends Object
 
             unset($data['_id']);
 
-            $this->update(['_id' => $id], ['$set' => $data], $options);
+            $bucketName = $this->db->quoteBucketName($this->name);
+
+            $this->update(["META($bucketName).id" => $id], ['$set' => $data], $options);
 
             return $id;
         }
