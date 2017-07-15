@@ -37,6 +37,7 @@ class Bucket extends Object
 
     /**
      * Drops this bucket.
+     *
      * @throws Exception on failure.
      * @return bool whether the operation successful.
      */
@@ -47,12 +48,14 @@ class Bucket extends Object
 
     /**
      * Inserts new data into bucket.
+     *
      * @param array|object $data data to be inserted.
+     *
      * @return null|int new record ID instance.
      */
     public function insert($data)
     {
-        return $this->db->createCommand()->insert($this->name, $data)->queryScalar('_id');
+        return $this->db->insert($this->name, $data);
     }
 
     /**
@@ -62,7 +65,7 @@ class Bucket extends Object
      */
     public function batchInsert($rows)
     {
-        $insertedIds = $this->db->createCommand()->batchInsert($this->name, $rows)->queryColumn('_id');
+        $insertedIds = $this->db->batchInsert($this->name, $rows);
 
         foreach ($rows as $key => $row) {
             $rows[$key]['_id'] = $insertedIds[$key]['_id'];
@@ -75,59 +78,141 @@ class Bucket extends Object
      * Updates the rows, which matches given criteria by given data.
      * Note: for "multi" mode Couchbase requires explicit strategy "$set" or "$inc"
      * to be specified for the "newData". If no strategy is passed "$set" will be used.
+     *
+     * @param array $columns the object with which to update the matching records.
      * @param array $condition description of the objects to update.
-     * @param array $newData the object with which to update the matching records.
-     * @param array $options list of options in format: optionName => optionValue.
+     * @param array $params list of options in format: optionName => optionValue.
+     *
      * @return int|bool number of updated documents or whether operation was successful.
      */
-    public function update($condition, $newData, $options = [])
+    public function update($columns, $condition, $params = [])
     {
-        return $this->db->createCommand()->update($this->name, $condition, $newData, $options)->execute();
+        return $this->db->update($this->name, $columns, $condition, $params);
+    }
+
+    /**
+     * Upsert record.
+     *
+     * @param string $id the document id.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     *
+     * @return bool
+     */
+    public function upsert($id, $data)
+    {
+        return $this->db->upsert($this->name, $id, $data);
     }
 
     /**
      * Update the existing database data, otherwise insert this data
+     *
      * @param array|object $data data to be updated/inserted.
-     * @param array $options list of options in format: optionName => optionValue.
+     *
      * @return int|null updated/new record id instance.
      */
-    public function save($data, $options = [])
+    public function save($data)
     {
         if (empty($data['_id'])) {
-            return $this->insert($data, $options);
+            return $this->insert($data);
         }
-        else {
-            $id = $data['_id'];
 
-            unset($data['_id']);
+        $id = $data['_id'];
 
-            $bucketName = $this->db->quoteBucketName($this->name);
+        unset($data['_id']);
 
-            $this->update(["META($bucketName).id" => $id], ['$set' => $data], $options);
+        $bucketName = $this->db->quoteBucketName($this->name);
 
-            return $id;
-        }
+        $this->update($data, ["META($bucketName).id" => $id]);
+
+        return $id;
     }
 
     /**
-     * Removes data from the bucket.
+     * Delete data from the bucket.
+     *
      * @param array $condition description of records to remove.
      * @param array $options list of options in format: optionName => optionValue.
+     *
      * @return int|bool number of updated documents or whether operation was successful.
      */
-    public function remove($condition = [], $options = [])
+    public function delete($condition = [], $options = [])
     {
-        return $this->db->createCommand()->delete($this->name, $condition, $options)->execute();
+        return $this->db->delete($this->name, $condition, $options);
     }
 
     /**
      * Counts records in this bucket.
+     *
      * @param array $condition query condition
-     * @param array $options list of options in format: optionName => optionValue.
+     * @param array $params list of options in format: optionName => optionValue.
+     *
      * @return int records count.
      */
-    public function count($condition = [], $options = [])
+    public function count($condition = [], $params = [])
     {
-        return $this->db->createCommand()->count($this->name, $condition, $options);
+        return $this->db->count($this->name, $condition, $params);
+    }
+
+    /**
+     * Build index.
+     *
+     * @param string|string[] $indexNames names of index
+     *
+     * @return bool
+     */
+    public function buildIndex($indexNames)
+    {
+        return $this->db->buildIndex($this->name, $indexNames);
+    }
+
+    /**
+     * Create primary index.
+     *
+     * @param string|null $indexName name of primary index (optional)
+     * @param array       $options
+     *
+     * @return bool
+     */
+    public function createPrimaryIndex($indexName = null, $options = [])
+    {
+        return $this->db->createPrimaryIndex($this->name, $indexName, $options);
+    }
+
+    /**
+     * Drop unnamed primary index.
+     *
+     * @return bool
+     */
+    public function dropPrimaryIndex()
+    {
+        return $this->db->dropPrimaryIndex($this->name);
+    }
+
+    /**
+     * Creates index.
+     *
+     * @param string     $indexName
+     * @param array      $columns
+     * @param array|null $condition
+     * @param array      $params
+     * @param array      $options
+     *
+     * @return bool
+     */
+    public function createIndex($indexName, $columns, $condition = null, &$params = [], $options = [])
+    {
+        return $this->db->createIndex($this->name, $indexName, $columns, $condition, $params, $options);
+    }
+
+    /**
+     * Drop index.
+     *
+     * @param string $indexName
+     *
+     * @return bool
+     */
+    public function dropIndex($indexName)
+    {
+        return $this->db->dropIndex($this->name, $indexName);
     }
 }

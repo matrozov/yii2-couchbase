@@ -7,7 +7,6 @@
 namespace matrozov\couchbase;
 
 use Yii;
-use yii\db\Expression;
 
 /**
  * Class Query

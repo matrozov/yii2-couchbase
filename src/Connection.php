@@ -47,7 +47,7 @@ class Connection extends Component
      * Correct syntax is:
      * couchbase://host1[:port1][,host2[:port2:],...]
      * For example:
-     * couchbase://localhost:27017
+     * couchbase://localhost:11210
      */
     public $dsn;
 
@@ -118,23 +118,23 @@ class Connection extends Component
 
     /**
      * Returns the Couchbase bucket with the given name.
-     * @param string|array $name bucket name. If string considered as the name of the bucket
+     * @param string $bucketName bucket name. If string considered as the name of the bucket
      * inside the default database. If array - first element considered as the name of the database,
      * second - as name of bucket inside that database
      * @param string $password bucket password
      * @return Bucket Couchbase basket instance.
      */
-    public function getBucket($name = null, $password = null)
+    public function getBucket($bucketName = null, $password = null)
     {
-        if ($name === null) {
-            $name = $this->defaultBucket;
+        if ($bucketName === null) {
+            $bucketName = $this->defaultBucket;
         }
 
-        if (!array_key_exists($name, $this->_buckets)) {
-            $this->_buckets[$name] = $this->selectBucket($name, $password);
+        if (!array_key_exists($bucketName, $this->_buckets)) {
+            $this->_buckets[$bucketName] = $this->selectBucket($bucketName, $password);
         }
 
-        return $this->_buckets[$name];
+        return $this->_buckets[$bucketName];
     }
 
     /**
@@ -395,6 +395,160 @@ class Connection extends Component
     }
 
     /**
+     * Insert record.
+     *
+     * @param string $bucketName the bucket that new rows will be inserted into.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance
+     *
+     * @return int|false inserted id
+     */
+    public function insert($bucketName, $data)
+    {
+        return $this->createCommand()->insert($bucketName, $data)->queryScalar();
+    }
+
+    /**
+     * Batch insert record.
+     *
+     * @param string $bucketName the bucket that new rows will be inserted into.
+     * @param array $rows the rows to be batch inserted into the bucket
+     *
+     * @return int[]|false inserted ids
+     */
+    public function batchInsert($bucketName, $rows)
+    {
+        return $this->createCommand()->batchInsert($bucketName, $rows)->queryColumn();
+    }
+
+    /**
+     * Update record.
+     *
+     * @param string $bucketName the bucket to be updated.
+     * @param array $columns the column data (name => value) to be updated.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     *
+     * @return int affected rows
+     */
+    public function update($bucketName, $columns, $condition, $params = [])
+    {
+        return $this->createCommand()->update($bucketName, $columns, $condition, $params)->execute();
+    }
+
+    /**
+     * Upsert record.
+     *
+     * @param string $bucketName the bucket to be updated.
+     * @param string $id the document id.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     *
+     * @return bool
+     */
+    public function upsert($bucketName, $id, $data)
+    {
+        return $this->createCommand()->upsert($bucketName, $id, $data)->execute();
+    }
+
+    /**
+     * Delete record
+     *
+     * @param string $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     *
+     * @return int affected rows
+     */
+    public function delete($bucketName, $condition = '', $params = [])
+    {
+        return $this->createCommand()->delete($bucketName, $condition, $params)->execute();
+    }
+
+    /**
+     * Counts records in this bucket.
+     *
+     * @param string $bucketName the bucket where the data will be deleted from.
+     * @param array $condition query condition
+     * @param array $params list of options in format: optionName => optionValue.
+     *
+     * @return int records count.
+     */
+    public function count($bucketName, $condition = '', $params = [])
+    {
+        return $this->createCommand()->count($bucketName, $condition, $params)->queryScalar();
+    }
+
+    /**
+     * Build index.
+     *
+     * @param string          $bucketName
+     * @param string|string[] $indexNames names of index
+     *
+     * @return bool
+     */
+    public function buildIndex($bucketName, $indexNames)
+    {
+        return $this->createCommand()->buildIndex($bucketName, $indexNames)->execute();
+    }
+
+    /**
+     * Create primary index.
+     *
+     * @param string      $bucketName
+     * @param string|null $indexName name of primary index (optional)
+     * @param array       $options
+     *
+     * @return bool
+     */
+    public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
+    {
+        return $this->createCommand()->createPrimaryIndex($bucketName, $indexName, $options)->execute();
+    }
+
+    /**
+     * Drop unnamed primary index.
+     *
+     * @param string $bucketName
+     *
+     * @return bool
+     */
+    public function dropPrimaryIndex($bucketName)
+    {
+        return $this->createCommand()->dropPrimaryIndex($bucketName)->execute();
+    }
+
+    /**
+     * Creates index.
+     *
+     * @param string     $bucketName
+     * @param string     $indexName
+     * @param array      $columns
+     * @param array|null $condition
+     * @param array      $params
+     * @param array      $options
+     *
+     * @return bool
+     */
+    public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
+    {
+        return $this->createCommand()->createIndex($bucketName, $indexName, $columns, $condition, $params, $options)->execute();
+    }
+
+    /**
+     * Drop index.
+     *
+     * @param string $bucketName
+     * @param string $indexName
+     *
+     * @return bool
+     */
+    public function dropIndex($bucketName, $indexName)
+    {
+        return $this->createCommand()->dropIndex($bucketName, $indexName)->execute();
+    }
+
+    /**
      * @return QueryBuilder the query builder for this connection.
      */
     public function getQueryBuilder()
@@ -408,6 +562,7 @@ class Connection extends Component
 
     /**
      * Create new ID from UUID()
+     *
      * @return string id of bucket
      */
     public function createId()

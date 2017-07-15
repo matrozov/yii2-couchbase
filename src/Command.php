@@ -130,6 +130,7 @@ class Command extends Object
         try {
             $this->n1ql = N1qlQuery::fromString($sql);
             $this->n1ql->namedParams($this->params);
+            $this->n1ql->consistency(N1qlQuery::REQUEST_PLUS);
         }
         catch (\Exception $e) {
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
@@ -208,70 +209,6 @@ class Command extends Object
     }
 
     /**
-     * Executes the SQL statement and returns query result.
-     * This method is for executing a SQL query that returns result set, such as `SELECT`.
-     * @return DataReader the reader object for fetching the query result
-     * @throws Exception execution failed
-     */
-    public function query()
-    {
-        return $this->queryInternal();
-    }
-
-    /**
-     * Executes the SQL statement and returns ALL rows at once.
-     * @return array all rows of the query result. Each array element is an array representing a row of data.
-     * An empty array is returned if the query results in nothing.
-     * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
-     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
-     */
-    public function queryAll()
-    {
-        return $this->queryInternal(self::FETCH_ALL);
-    }
-
-    /**
-     * Executes the SQL statement and returns the first row of the result.
-     * This method is best used when only the first row of result is needed for a query.
-     * @return array|false the first row (in terms of an array) of the query result. False is returned if the query
-     * results in nothing.
-     * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://php.net/manual/en/pdostatement.setfetchmode.php)
-     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
-     */
-    public function queryOne()
-    {
-        return $this->queryInternal(self::FETCH_ONE);
-    }
-
-    /**
-     * Executes the SQL statement and returns the value of the first column in the first row of data.
-     * This method is best used when only a single value is needed for a query.
-     *
-     * @param null|string $columnName
-     *
-     * @return false|null|string the value of the first column in the first row of the query result.
-     * False is returned if there is no value.
-     */
-    public function queryScalar($columnName = null)
-    {
-        return $this->queryInternal(self::FETCH_SCALAR, $columnName);
-    }
-
-    /**
-     * Executes the SQL statement and returns the first column of the result.
-     * This method is best used when only the first column of result (i.e. the first element in each row)
-     * is needed for a query.
-     *
-     * @param null|string $columnName
-     *
-     * @return array the first column of the query result. Empty array is returned if the query results in nothing.
-     */
-    public function queryColumn($columnName = null)
-    {
-        return $this->queryInternal(self::FETCH_COLUMN, $columnName);
-    }
-
-    /**
      * Creates an INSERT command.
      * For example,
      *
@@ -282,12 +219,22 @@ class Command extends Object
      * ])->execute();
      * ```
      *
+     * or
+     *
+     * ```
+     * $insertId = $connection->createCommand()->insert('user', [
+     *      'name' => 'Sam',
+     *      'age' => 30,
+     * ])->queryScalar();
+     * ```
+     *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
-     * Note that the created command is not executed until [[execute()]] is called.
+     * Note that the created command is not executed until [[execute()]] or [[queryScalar()]] is called.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $data the column data (name => value) to be inserted into the bucket or instance
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     *
      * @return $this the command object itself
      */
     public function insert($bucketName, $data)
@@ -316,7 +263,8 @@ class Command extends Object
      * Also note that the created command is not executed until [[execute()]] is called.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $rows the rows to be batch inserted into the bucket
+     * @param array $rows the rows to be batch inserted into the bucket.
+     *
      * @return $this the command object itself
      */
     public function batchInsert($bucketName, $rows)
@@ -343,13 +291,39 @@ class Command extends Object
      * @param string|array $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
+     *
      * @return $this the command object itself
      */
-    public function update($bucketName, $condition, $columns, $params = [])
+    public function update($bucketName, $columns, $condition, $params = [])
     {
-        $sql = $this->db->getQueryBuilder()->update($bucketName, $condition, $columns, $params);
+        $sql = $this->db->getQueryBuilder()->update($bucketName, $columns, $condition, $params);
 
         return $this->setSql($sql)->bindValues($params);
+    }
+
+    /**
+     * Creates an UPSERT command.
+     * For example,
+     *
+     * ```php
+     * $connection->createCommand()->upsert('user', 'my-id', ['status' => 1])->execute();
+     * ```
+     *
+     * The method will properly escape the column names and bind the values to be updated.
+     *
+     * Note that the created command is not executed until [[execute()]] is called.
+     *
+     * @param string $bucketName the bucket to be updated.
+     * @param string $id the document id.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     *
+     * @return $this the command object itself
+     */
+    public function upsert($bucketName, $id, $data)
+    {
+        $sql = $this->db->getQueryBuilder()->upsert($bucketName, $id, $data);
+
+        return $this->setSql($sql);
     }
 
     /**
@@ -368,6 +342,7 @@ class Command extends Object
      * @param string|array $condition the condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
+     *
      * @return $this the command object itself
      */
     public function delete($bucketName, $condition = '', $params = [])
@@ -375,6 +350,47 @@ class Command extends Object
         $sql = $this->db->getQueryBuilder()->delete($bucketName, $condition, $params);
 
         return $this->setSql($sql)->bindValues($params);
+    }
+
+    /**
+     * Creates a SELECT COUNT command.
+     * For example,
+     *
+     * ```php
+     * $connection->createCommand()->count('user', 'status = 0')->queryScalar();
+     * ```
+     *
+     * The method will properly escape the bucket and column names.
+     *
+     * Note that the created command is not executed until [[queryScalar()]] is called.
+     *
+     * @param string $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     *
+     * @return $this the command object itself
+     */
+    public function count($bucketName, $condition = '', $params = [])
+    {
+        $sql = $this->db->getQueryBuilder()->count($bucketName, $condition, $params);
+
+        return $this->setSql($sql)->bindValues($params);
+    }
+
+    /**
+     * Create a SQL command for build index.
+     *
+     * @param string          $bucketName
+     * @param string|string[] $indexNames names of index
+     *
+     * @return $this the command object itself
+     */
+    public function buildIndex($bucketName, $indexNames)
+    {
+        $sql = $this->db->getQueryBuilder()->buildIndex($bucketName, $indexNames);
+
+        return $this->setSql($sql);
     }
 
     /**
@@ -454,7 +470,7 @@ class Command extends Object
 
         $this->prepare();
 
-        $result = 0;
+        $result = true;
 
         try {
             $profile and Yii::beginProfile($rawSql, __METHOD__);
@@ -462,13 +478,153 @@ class Command extends Object
             $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
 
             if ($res->status === 'success') {
-                $result = $res->metrics['mutationCount'];
+                if (isset($res->metrics['mutationCount'])) {
+                    $result = $res->metrics['mutationCount'];
+                }
+            }
+            else {
+                $result = false;
             }
 
             $profile and Yii::endProfile($rawSql, __METHOD__);
         }
         catch (\Exception $e) {
             $profile and Yii::endProfile($rawSql, __METHOD__);
+            //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
+            //TODO: FixIt
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Executes the SQL statement and returns query result.
+     * This method is for executing a SQL query that returns result set, such as `SELECT`.
+     * @return DataReader the reader object for fetching the query result
+     * @throws Exception execution failed
+     */
+    public function query()
+    {
+        return $this->queryInternal();
+    }
+
+    /**
+     * Executes the SQL statement and returns ALL rows at once.
+     * @return array all rows of the query result. Each array element is an array representing a row of data.
+     * An empty array is returned if the query results in nothing.
+     * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
+     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
+     */
+    public function queryAll()
+    {
+        return $this->queryInternal(self::FETCH_ALL);
+    }
+
+    /**
+     * Executes the SQL statement and returns the first row of the result.
+     * This method is best used when only the first row of result is needed for a query.
+     * @return array|false the first row (in terms of an array) of the query result. False is returned if the query
+     * results in nothing.
+     * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://php.net/manual/en/pdostatement.setfetchmode.php)
+     * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
+     */
+    public function queryOne()
+    {
+        return $this->queryInternal(self::FETCH_ONE);
+    }
+
+    /**
+     * Executes the SQL statement and returns the value of the first column in the first row of data.
+     * This method is best used when only a single value is needed for a query.
+     *
+     * @param null|string $columnName
+     *
+     * @return false|null|string the value of the first column in the first row of the query result.
+     * False is returned if there is no value.
+     */
+    public function queryScalar($columnName = null)
+    {
+        return $this->queryInternal(self::FETCH_SCALAR, $columnName);
+    }
+
+    /**
+     * Executes the SQL statement and returns the first column of the result.
+     * This method is best used when only the first column of result (i.e. the first element in each row)
+     * is needed for a query.
+     *
+     * @param null|string $columnName
+     *
+     * @return array the first column of the query result. Empty array is returned if the query results in nothing.
+     */
+    public function queryColumn($columnName = null)
+    {
+        return $this->queryInternal(self::FETCH_COLUMN, $columnName);
+    }
+
+    /**
+     * Performs the actual DB query of a SQL statement.
+     *
+     * @param string      $method method of PDOStatement to be called
+     * @param null|string $columnName
+     *
+     * @return mixed the method execution result
+     * @throws Exception
+     */
+    protected function queryInternal($method = null, $columnName = null)
+    {
+        list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
+
+        $this->prepare();
+
+        $result = false;
+
+        try {
+            $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
+
+            $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
+
+            if ($res->status == 'success') {
+                if (!empty($res->rows)) {
+                    switch ($method) {
+                        case self::FETCH_ALL: {
+                            $result = $res->rows;
+                        } break;
+                        case self::FETCH_ONE: {
+                            $result = $res->rows[0];
+                        } break;
+                        case self::FETCH_SCALAR: {
+                            if ($columnName === null) {
+                                $columnName = array_keys($res->rows[0])[0];
+                            }
+
+                            $result = $res->rows[0][$columnName];
+                        } break;
+                        case self::FETCH_COLUMN: {
+                            if ($columnName === null) {
+                                $columnName = array_keys($res->rows[0])[0];
+                            }
+
+                            $result = [];
+
+                            foreach ($res->rows as $row) {
+                                $result[] = $row[$columnName];
+                            }
+                        } break;
+                        default: {
+                            $result = $res;
+                        }
+                    }
+                }
+                else {
+                    $result = [];
+                }
+            }
+
+            $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
+        }
+        catch (\Exception $e) {
+            $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
@@ -498,77 +654,4 @@ class Command extends Object
             return [true, isset($rawSql) ? $rawSql : $this->getRawSql()];
         }
     }
-
-    /**
-     * Performs the actual DB query of a SQL statement.
-     *
-     * @param string      $method method of PDOStatement to be called
-     * @param null|string $columnName
-     *
-     * @return mixed the method execution result
-     * @throws Exception
-     */
-    protected function queryInternal($method = null, $columnName = null)
-    {
-        list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
-
-        $this->prepare();
-
-        $result = false;
-
-        try {
-            $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
-
-            $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
-
-            if ($res->status == 'success') {
-
-                if (!empty($res->rows)) {
-                    switch ($method) {
-                        case self::FETCH_ALL: {
-                            $result = $res->rows;
-                        } break;
-                        case self::FETCH_ONE: {
-                            $result = $res->rows[0];
-                        } break;
-                        case self::FETCH_SCALAR: {
-                            if ($columnName === null) {
-                                $columnName = array_keys($res->rows[0])[0];
-                            }
-
-                            $result = $res->rows[0][$columnName];
-                        } break;
-                        case self::FETCH_COLUMN: {
-                            if ($columnName === null) {
-                                $columnName = array_keys($res->rows[0])[0];
-                            }
-
-                            $result = [];
-
-                            foreach ($res->rows as $row) {
-                                $result[][$columnName] = $row[$columnName];
-                            }
-                        } break;
-                        default: {
-                            $result = $res;
-                        }
-                    }
-                }
-                else {
-                    $result = [];
-                }
-            }
-
-            $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
-        }
-        catch (\Exception $e) {
-            $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
-            //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
-            //TODO: FixIt
-            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
-        }
-
-        return $result;
-    }
-
 }

@@ -143,7 +143,7 @@ class QueryBuilder extends Object
      * For example,
      *
      * ```php
-     * $sql = $queryBuilder->insert('user', 'my-new-id', [
+     * $sql = $queryBuilder->insert('user', [
      *     'name' => 'Sam',
      *     'age' => 30,
      * ], $params);
@@ -159,8 +159,7 @@ class QueryBuilder extends Object
     public function insert($bucketName, $data)
     {
         $bucketName = $this->db->quoteBucketName($bucketName);
-
-        $data = Json::encode($data);
+        $data       = Json::encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT);
 
         return "INSERT INTO $bucketName (KEY, VALUE) VALUES (UUID(), $data) " . $this->buildReturning([new Expression('META().id AS `_id`')]);
     }
@@ -194,7 +193,7 @@ class QueryBuilder extends Object
         $values = [];
 
         foreach ($rows as $row) {
-            $values[] = '(UUID(), ' . Json::encode($row);
+            $values[] = 'VALUES (UUID(), ' . Json::encode($row, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT) . ')';
         }
 
         if (empty($values)) {
@@ -202,7 +201,7 @@ class QueryBuilder extends Object
         }
 
         return 'INSERT INTO ' . $this->db->quotebucketName($bucketName)
-            . ' (KEY, VALUE) VALUES ' . implode(', VALUES ', $values)
+            . ' (KEY, VALUE) ' . implode(', ', $values)
             . ' ' . $this->buildReturning([new Expression('META().id AS `_id`')]);
     }
 
@@ -225,13 +224,13 @@ class QueryBuilder extends Object
      * so that they can be bound to the DB command later.
      * @return string the UPDATE SQL
      */
-    public function update($bucketName, $condition, $columns, &$params)
+    public function update($bucketName, $columns, $condition, &$params)
     {
         $lines = [];
 
         foreach ($columns as $name => $value) {
             if ($value instanceof Expression) {
-                $lines[] = $this->db->quoteColumnName($name) . '=' . $value->expression;
+                $lines[] = '`bucket`.' . $this->db->quoteColumnName($name) . '=' . $value->expression;
 
                 foreach ($value->params as $n => $v) {
                     $params[$n] = $v;
@@ -239,15 +238,43 @@ class QueryBuilder extends Object
             }
             else {
                 $phName = self::PARAM_PREFIX . count($params);
-                $lines[] = $this->db->quoteColumnName($name) . '=' . $phName;
+                $lines[] = '`bucket`.' .$this->db->quoteColumnName($name) . '=' . $phName;
                 $params[$phName] = $value;
             }
         }
 
-        $sql = 'UPDATE ' . $this->db->quotebucketName($bucketName) . ' SET ' . implode(', ', $lines);
+        $sql = 'UPDATE ' . $this->db->quotebucketName($bucketName) . ' AS `bucket` SET ' . implode(', ', $lines);
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;
+    }
+
+    /**
+     * Creates an UPSERT SQL statement.
+     * For example,
+     *
+     * ```php
+     * $sql = $queryBuilder->upsert('user', 'my-id', [
+     *     'name' => 'Sam',
+     *     'age' => 30,
+     * ], $params);
+     * ```
+     *
+     * The method will properly escape the bucket and column names.
+     *
+     * @param string $bucketName the bucket that new rows will be inserted into.
+     * @param string $id the document id.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance
+     * They should be bound to the DB command later.
+     * @return string the UPSERT SQL
+     */
+    public function upsert($bucketName, $id, $data)
+    {
+        $bucketName = $this->db->quoteBucketName($bucketName);
+        $id         = $this->db->quoteValue($id);
+        $data       = Json::encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT);
+
+        return "UPSERT INTO $bucketName (KEY, VALUE) VALUES ($id, $data) ";
     }
 
     /**
@@ -265,15 +292,62 @@ class QueryBuilder extends Object
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the binding parameters that will be modified by this method
      * so that they can be bound to the DB command later.
+     *
      * @return string the DELETE SQL
      */
-    public function delete($bucketName, $condition, &$params)
+    public function delete($bucketName, $condition = '', &$params)
     {
         $sql = 'DELETE FROM ' . $this->db->quotebucketName($bucketName);
 
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;
+    }
+
+    /**
+     * Creates a SELECT COUNT SQL statement.
+     * For example,
+     *
+     * ```php
+     * $sql = $queryBuilder->count('user', 'status = 0');
+     * ```
+     *
+     * The method will properly escape the bucket and column names.
+     *
+     * @param string $bucketName the bucket where the data will be deleted from.
+     * @param array|string $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the binding parameters that will be modified by this method
+     * so that they can be bound to the DB command later.
+     *
+     * @return string the SELECT COUNT SQL
+     */
+    public function count($bucketName, $condition = '', &$params)
+    {
+        $sql = 'SELECT COUNT(*) FROM ' . $this->db->quotebucketName($bucketName);
+
+        $where = $this->buildWhere($condition, $params);
+
+        return $where === '' ? $sql : $sql . ' ' . $where;
+    }
+
+    /**
+     * Builds a SQL statement for build index.
+     *
+     * @param string          $bucketName
+     * @param string|string[] $indexNames names of index
+     *
+     * @return string the BUILD INDEX SQL
+     */
+    public function buildIndex($bucketName, $indexNames)
+    {
+        $indexNames = is_array($indexNames) ? $indexNames : [$indexNames];
+
+        foreach ($indexNames as $i => $indexName) {
+            $indexNames[$i] = $this->db->quoteColumnName($indexName);
+        }
+
+        return 'BUILD INDEX ' . $this->db->quoteBucketName($bucketName) . '(' . implode(', ', $indexNames) . ') USING GSI';
     }
 
     /**
@@ -296,7 +370,7 @@ class QueryBuilder extends Object
         $sql = "CREATE PRIMARY INDEX $indexName ON $bucketName";
 
         if (!empty($options)) {
-            $sql .= ' WITH ' . Json::encode($options);
+            $sql .= ' WITH ' . Json::encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT);
         }
 
         return $sql;
@@ -346,7 +420,7 @@ class QueryBuilder extends Object
 
         $sql = "CREATE INDEX $indexName ON $bucketName (" . implode(', ', $columns) . ")";
         $sql = $where === '' ? $sql : $sql . ' ' . $where;
-        $sql = empty($options) ? $sql : $sql . ' WITH ' . Json::encode($options);
+        $sql = empty($options) ? $sql : $sql . ' WITH ' . Json::encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT);
 
         return $sql;
     }
