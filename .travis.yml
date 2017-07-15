@@ -18,7 +18,7 @@ before_install:
   - chmod +x ./tests/data/travis/couchbase-setup.sh
 
 install:
-  - tests/data/travis/couchbase-setup.sh
+  - sudo tests/data/travis/couchbase-setup.sh
   - travis_retry composer self-update && composer --version
   - travis_retry composer global require "fxp/composer-asset-plugin:^1.2.0"
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
