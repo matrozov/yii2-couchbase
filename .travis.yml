@@ -7,15 +7,17 @@ services:
   - couchbase
 
 # faster builds on new travis setup not using sudo
-sudo: true
+sudo: false
 
 # cache vendor dirs
 cache:
   directories:
     - $HOME/.composer/cache
 
+before_install:
+  - sudo ./tests/data/travis/couchbase-setup.sh
+
 install:
-  - tests/data/travis/couchbase-setup.sh
   - travis_retry composer self-update && composer --version
   - travis_retry composer global require "fxp/composer-asset-plugin:^1.2.0"
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
