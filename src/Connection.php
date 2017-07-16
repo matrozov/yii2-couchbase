@@ -8,9 +8,9 @@ namespace matrozov\couchbase;
 
 use Couchbase\Cluster;
 use Couchbase\ClusterManager;
+use Yii;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use Yii;
 use yii\db\Expression;
 
 /**
@@ -186,6 +186,7 @@ class Connection extends Component
     /**
      * Returns a value indicating whether the Couchbase connection is established
      * and you has administration privilege.
+     *
      * @return bool whether the Couchbase connection is established and has privilege.
      */
     public function getIsManagerActive()
@@ -221,6 +222,42 @@ class Connection extends Component
             }
 
             $this->initConnection();
+
+            Yii::endProfile($token, __METHOD__);
+        }
+        catch (\Exception $e) {
+            Yii::endProfile($token, __METHOD__);
+
+            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
+        }
+    }
+
+    /**
+     * Open a CouchbaseManager.
+     * It does nothing if a CouchbaseManager has already been opened.
+     * @throws Exception if open fails
+     */
+    public function openManager()
+    {
+        if ($this->manager !== null) {
+            return;
+        }
+
+        if ($this->cluster === null) {
+            $this->open();
+        }
+
+        if (empty($this->managerUserName) || empty($this->managerPassword)) {
+            throw new InvalidConfigException($this->className() . '::managerUserName/managerPassword cannot be empty.');
+        }
+
+        $token = 'Opening CouchbaseManager: ' . $this->managerUserName;
+
+        try {
+            Yii::trace($token, __METHOD__);
+            Yii::beginProfile($token, __METHOD__);
+
+            $this->manager = $this->cluster->manager($this->managerUserName, $this->managerPassword);
 
             Yii::endProfile($token, __METHOD__);
         }
@@ -349,11 +386,7 @@ class Connection extends Component
      */
     public function createBucket($bucketName, array $options = [])
     {
-        $this->open();
-
-        if (!$this->getIsManagerActive()) {
-            throw new Exception('Active manager required!');
-        }
+        $this->openManager();
 
         $this->manager->createBucket($bucketName, $options);
     }
@@ -367,11 +400,7 @@ class Connection extends Component
      */
     public function dropBucket($bucketName)
     {
-        $this->open();
-
-        if (!$this->getIsManagerActive()) {
-            throw new Exception('Active manager required!');
-        }
+        $this->openManager();
 
         $this->manager->removeBucket($bucketName);
     }
@@ -385,11 +414,7 @@ class Connection extends Component
      */
     public function listBuckets()
     {
-        $this->open();
-
-        if (!$this->getIsManagerActive()) {
-            throw new Exception('Active manager required!');
-        }
+        $this->openManager();
 
         return $this->manager->listBuckets();
     }

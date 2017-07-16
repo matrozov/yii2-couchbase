@@ -47,65 +47,6 @@ abstract class Migration extends Component implements MigrationInterface
         echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
-
-    // TODO:FixIt many other functions
-
-    /**
-     * @param string      $bucketName
-     * @param string|null $indexName name of primary index (optional)
-     * @param array       $options
-     */
-    public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
-    {
-        $this->beginProfile($token = "    > create primary index $bucketName ...");
-
-        $this->db->createCommand()->createPrimaryIndex($bucketName, $indexName, $options)->execute();
-
-        $this->endProfile($token);
-    }
-
-    /**
-     * @param string $bucketName
-     */
-    public function dropPrimaryIndex($bucketName)
-    {
-        $this->beginProfile($token = "    > drop index $bucketName ...");
-
-        $this->db->createCommand()->dropPrimaryIndex($bucketName)->execute();
-
-        $this->endProfile($token);
-    }
-
-    /**
-     * @param string     $bucketName
-     * @param string     $indexName
-     * @param array      $columns
-     * @param array|null $condition
-     * @param array      $params
-     * @param array      $options
-     */
-    public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
-    {
-        $this->beginProfile($token = "    > create index $bucketName.$indexName ...");
-
-        $this->db->createCommand()->createIndex($bucketName, $indexName, $columns, $condition, $params, $options)->execute();
-
-        $this->endProfile($token);
-    }
-
-    /**
-     * @param string $bucketName
-     * @param string $indexName
-     */
-    public function dropIndex($bucketName, $indexName)
-    {
-        $this->beginProfile($token = "    > drop index $bucketName.$indexName ...");
-
-        $this->db->createCommand()->dropIndex($bucketName, $indexName)->execute();
-
-        $this->endProfile($token);
-    }
-
     /**
      * Creates new bucket with the specified options.
      * @param string $bucketName name of the bucket
@@ -131,6 +72,198 @@ abstract class Migration extends Component implements MigrationInterface
         $this->db->getBucket($bucketName)->drop();
 
         $this->endProfile($token);
+    }
+
+    /**
+     * Insert record.
+     *
+     * @param string $bucketName the bucket that new rows will be inserted into.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance
+     *
+     * @return int|false inserted id
+     */
+    public function insert($bucketName, $data)
+    {
+        $this->beginProfile($token = "    > insert into $bucketName ...");
+
+        $result = $this->db->insert($bucketName, $data);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * Batch insert record.
+     *
+     * @param string $bucketName the bucket that new rows will be inserted into.
+     * @param array $rows the rows to be batch inserted into the bucket
+     *
+     * @return int[]|false inserted ids
+     */
+    public function batchInsert($bucketName, $rows)
+    {
+        $this->beginProfile($token = "    > batch insert into $bucketName ...");
+
+        $result = $this->db->batchInsert($bucketName, $rows);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * Update record.
+     *
+     * @param string $bucketName the bucket to be updated.
+     * @param array $columns the column data (name => value) to be updated.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     *
+     * @return int affected rows
+     */
+    public function update($bucketName, $columns, $condition, $params = [])
+    {
+        $this->beginProfile($token = "    > update record $bucketName ...");
+
+        $result = $this->db->update($bucketName, $columns, $condition, $params);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * Upsert record.
+     *
+     * @param string $bucketName the bucket to be updated.
+     * @param string $id the document id.
+     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     *
+     * @return bool
+     */
+    public function upsert($bucketName, $id, $data)
+    {
+        $this->beginProfile($token = "    > upsert record $bucketName.$id ...");
+
+        $result = $this->db->upsert($bucketName, $id, $data);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * Delete record
+     *
+     * @param string $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     *
+     * @return int affected rows
+     */
+    public function delete($bucketName, $condition = '', $params = [])
+    {
+        $this->beginProfile($token = "    > delete record $bucketName ...");
+
+        $result = $this->db->delete($bucketName, $condition, $params);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * Build index.
+     *
+     * @param string          $bucketName
+     * @param string|string[] $indexNames names of index
+     *
+     * @return bool
+     */
+    public function buildIndex($bucketName, $indexNames)
+    {
+        $this->beginProfile($token = "    > build index $bucketName ...");
+
+        $result = $this->db->buildIndex($bucketName, $indexNames);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * @param string      $bucketName
+     * @param string|null $indexName name of primary index (optional)
+     * @param array       $options
+     *
+     * @return bool
+     */
+    public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
+    {
+        $this->beginProfile($token = "    > create primary index $bucketName ...");
+
+        $result = $this->db->createPrimaryIndex($bucketName, $indexName, $options);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * @param string $bucketName
+     *
+     * @return bool
+     */
+    public function dropPrimaryIndex($bucketName)
+    {
+        $this->beginProfile($token = "    > drop index $bucketName ...");
+
+        $result = $this->db->dropPrimaryIndex($bucketName);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * @param string     $bucketName
+     * @param string     $indexName
+     * @param array      $columns
+     * @param array|null $condition
+     * @param array      $params
+     * @param array      $options
+     *
+     * @return bool
+     */
+    public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
+    {
+        $this->beginProfile($token = "    > create index $bucketName.$indexName ...");
+
+        $result = $this->db->createIndex($bucketName, $indexName, $columns, $condition, $params, $options);
+
+        $this->endProfile($token);
+
+        return $result;
+    }
+
+    /**
+     * @param string $bucketName
+     * @param string $indexName
+     *
+     * @return bool
+     */
+    public function dropIndex($bucketName, $indexName)
+    {
+        $this->beginProfile($token = "    > drop index $bucketName.$indexName ...");
+
+        $result = $this->db->dropIndex($bucketName, $indexName);
+
+        $this->endProfile($token);
+
+        return $result;
     }
 
     /**
