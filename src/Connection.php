@@ -425,7 +425,7 @@ class Connection extends Component
      * @param string $bucketName the bucket that new rows will be inserted into.
      * @param array $data the column data (name => value) to be inserted into the bucket or instance
      *
-     * @return int|false inserted id
+     * @return string inserted id
      */
     public function insert($bucketName, $data)
     {

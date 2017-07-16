@@ -88,7 +88,7 @@ class ActiveRecord extends BaseActiveRecord
      */
     public static function deleteAll($condition = [], $options = [])
     {
-        return static::getBucket()->remove($condition, $options);
+        return static::getBucket()->delete($condition, $options);
     }
 
     /**
@@ -165,15 +165,12 @@ class ActiveRecord extends BaseActiveRecord
         }
 
         $attributes = [];
-
-        $primaryKey = static::primaryKey()[0];
-
-        $attributes[$primaryKey] = true;
+        $attributes['_id'] = true;
 
         foreach ($rules as $rule) {
             if (is_array($rule[0])) {
                 foreach ($rule[0] as $field) {
-                    $attributes[$field] = $field;
+                    $attributes[$field] = true;
                 }
             }
             else {
@@ -182,6 +179,21 @@ class ActiveRecord extends BaseActiveRecord
         }
 
         return array_keys($attributes);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected static function findByCondition($condition)
+    {
+        $query = static::find();
+
+        if (!ArrayHelper::isAssociative($condition)) {
+            $condition = ["META().id" => $condition];
+        }
+
+        return $query->andWhere($condition);
     }
     
     /**
@@ -247,20 +259,16 @@ class ActiveRecord extends BaseActiveRecord
         if (empty($values)) {
             $currentAttributes = $this->getAttributes();
 
-            foreach ($this->primaryKey() as $key) {
-                if (isset($currentAttributes[$key])) {
-                    $values[$key] = $currentAttributes[$key];
-                }
+            if (isset($currentAttributes['_id'])) {
+                $values['_id'] = $currentAttributes['_id'];
             }
         }
 
         $newId = static::getBucket()->insert($values);
 
         if ($newId !== null) {
-            $primaryKey = static::primaryKey()[0];
-
-            $this->setAttribute($primaryKey, $newId);
-            $values[$primaryKey] = $newId;
+            $this->setAttribute('_id', $newId);
+            $values['_id'] = $newId;
         }
 
         $changedAttributes = array_fill_keys(array_keys($values), null);
@@ -291,19 +299,19 @@ class ActiveRecord extends BaseActiveRecord
         
         $condition = $this->getOldPrimaryKey(true);
         $lock = $this->optimisticLock();
-        
+
         if ($lock !== null) {
             if (!isset($values[$lock])) {
                 $values[$lock] = $this->$lock + 1;
             }
-            
+
             $condition[$lock] = $this->$lock;
         }
-        
+
         // We do not check the return value of update() because it's possible
         // that it doesn't change anything and thus returns 0.
-        $rows = static::getBucket()->update($condition, $values);
-        
+        $rows = static::getBucket()->update($values, $condition);
+
         if ($lock !== null && !$rows) {
             throw new StaleObjectException('The object being updated is outdated.');
         }
@@ -371,7 +379,7 @@ class ActiveRecord extends BaseActiveRecord
             $condition[$lock] = $this->$lock;
         }
 
-        $result = static::getBucket()->remove($condition);
+        $result = static::getBucket()->delete($condition);
 
         if ($lock !== null && !$result) {
             throw new StaleObjectException('The object being deleted is outdated.');
@@ -396,6 +404,32 @@ class ActiveRecord extends BaseActiveRecord
         }
 
         return $this->bucketName() === $record->bucketName() && (string) $this->getPrimaryKey() === (string) $record->getPrimaryKey();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPrimaryKey($asArray = false)
+    {
+        if ($asArray) {
+            return ['META().id' => $this->getPrimaryKey(false)];
+        }
+        else {
+            return $this->getAttribute('_id');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOldPrimaryKey($asArray = false)
+    {
+        if ($asArray) {
+            return ['META().id' => $this->getPrimaryKey(false)];
+        }
+        else {
+            return $this->getOldAttribute('_id');
+        }
     }
 
     /**

@@ -4,27 +4,27 @@ namespace yiiunit\extensions\couchbase;
 
 class CommandTest extends TestCase
 {
-    private static $insertId;
+    private static $id;
 
     public function testInsert()
     {
-        self::$insertId = self::$db->insert(self::$bucketName, [
+        self::$id = self::$db->insert(self::$bucketName, [
             'a' => 'hello',
         ]);
 
-        $this->assertNotFalse(self::$insertId);
+        $this->assertNotFalse(self::$id);
     }
 
     public function testUpdate()
     {
-        $affectedRows = self::$db->update(self::$bucketName, ['a' => 'hello2'], ['META().id' => self::$insertId]);
+        $affectedRows = self::$db->update(self::$bucketName, ['a' => 'hello2'], ['META().id' => self::$id]);
 
         $this->assertTrue($affectedRows === 1);
     }
 
     public function testDelete()
     {
-        $affectedRows = self::$db->delete(self::$bucketName, ['META().id' => self::$insertId]);
+        $affectedRows = self::$db->delete(self::$bucketName, ['META().id' => self::$id]);
 
         $this->assertTrue($affectedRows === 1);
     }

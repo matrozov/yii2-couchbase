@@ -1,10 +1,18 @@
 <?php
 
+/**
+ * Application configuration shared by all test types
+ */
 return [
-    'couchbase' => [
-        'class' => 'matrozov\couchbase\Connection',
-        'dsn' => 'couchbase://localhost/yii2test',
-        'managerUserName' => 'Administrator',
-        'managerPassword' => 'Administrator',
-    ]
+    'id' => 'couchbase-tests',
+    'basePath' => realpath(__DIR__ . '/../../'),
+    'language' => 'en-US',
+    'components' => [
+        'couchbase' => [
+            'class' => 'matrozov\couchbase\Connection',
+            'dsn' => 'couchbase://localhost',
+            'managerUserName' => 'Administrator',
+            'managerPassword' => 'Administrator',
+        ],
+    ],
 ];

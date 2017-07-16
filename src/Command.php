@@ -222,7 +222,7 @@ class Command extends Object
      * or
      *
      * ```
-     * $insertId = $connection->createCommand()->insert('user', [
+     * $id = $connection->createCommand()->insert('user', [
      *      'name' => 'Sam',
      *      'age' => 30,
      * ])->queryScalar();
@@ -585,22 +585,26 @@ class Command extends Object
             $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
 
             if ($res->status == 'success') {
-                if (!empty($res->rows)) {
-                    switch ($method) {
-                        case self::FETCH_ALL: {
-                            $result = $res->rows;
-                        } break;
-                        case self::FETCH_ONE: {
+                switch ($method) {
+                    case self::FETCH_ALL: {
+                        $result = $res->rows;
+                    } break;
+                    case self::FETCH_ONE: {
+                        if (!empty($res->rows)) {
                             $result = $res->rows[0];
-                        } break;
-                        case self::FETCH_SCALAR: {
+                        }
+                    } break;
+                    case self::FETCH_SCALAR: {
+                        if (!empty($res->rows)) {
                             if ($columnName === null) {
                                 $columnName = array_keys($res->rows[0])[0];
                             }
 
                             $result = $res->rows[0][$columnName];
-                        } break;
-                        case self::FETCH_COLUMN: {
+                        }
+                    } break;
+                    case self::FETCH_COLUMN: {
+                        if (!empty($res->rows)) {
                             if ($columnName === null) {
                                 $columnName = array_keys($res->rows[0])[0];
                             }
@@ -610,14 +614,11 @@ class Command extends Object
                             foreach ($res->rows as $row) {
                                 $result[] = $row[$columnName];
                             }
-                        } break;
-                        default: {
-                            $result = $res;
                         }
+                    } break;
+                    default: {
+                        $result = $res;
                     }
-                }
-                else {
-                    $result = [];
                 }
             }
 

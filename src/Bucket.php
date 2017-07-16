@@ -51,7 +51,7 @@ class Bucket extends Object
      *
      * @param array|object $data data to be inserted.
      *
-     * @return null|int new record ID instance.
+     * @return string new record ID instance.
      */
     public function insert($data)
     {
@@ -61,14 +61,14 @@ class Bucket extends Object
     /**
      * Inserts several new rows into bucket.
      * @param array $rows array of arrays or objects to be inserted.
-     * @return array inserted data, each row will have "_id" key assigned to it.
+     * @return string[] inserted data, each row will have "_id" key assigned to it.
      */
     public function batchInsert($rows)
     {
         $insertedIds = $this->db->batchInsert($this->name, $rows);
 
         foreach ($rows as $key => $row) {
-            $rows[$key]['_id'] = $insertedIds[$key]['_id'];
+            $rows[$key]['_id'] = $insertedIds[$key];
         }
 
         return $rows;

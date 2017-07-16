@@ -25,10 +25,28 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public static function setUpBeforeClass()
     {
-        $config = self::getParam('couchbase');
+        static::$params = require(__DIR__ . '/data/config.php');
 
-        self::$db = Yii::createObject($config);
+        self::mockApplication(static::$params);
+
+        self::$db = Yii::$app->couchbase;
         self::$bucketName = 'yii2test';
+    }
+
+    /**
+     * Populates Yii::$app with a new application
+     * The application will be destroyed on tearDown() automatically.
+     * @param array $config The application configuration, if needed
+     * @param string $appClass name of the application class to create
+     */
+    protected static function mockApplication($config = [], $appClass = '\yii\console\Application')
+    {
+        new $appClass(ArrayHelper::merge([
+            'id' => 'testapp',
+            'basePath' => __DIR__,
+            'vendorPath' => realpath(__DIR__ . '/../vendors'),
+            'runtimePath' => dirname(__DIR__) . '/runtime',
+        ], $config));
     }
 
     /**
