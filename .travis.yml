@@ -18,7 +18,8 @@ addons:
     - python
 
 before_install:
-  - sudo ./tests/couchbase-setup.sh
+  - chmod -x ./tests/data/travis/couchbase-setup.sh
+  - sudo ./tests/data/travis/couchbase-setup.sh
 
 install:
   - travis_retry composer self-update && composer --version
