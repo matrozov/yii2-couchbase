@@ -17,9 +17,12 @@ addons:
     - python
 
 before_install:
-  - wget http://packages.couchbase.com/releases/4.6.2/couchbase-server-enterprise_4.6.2-ubuntu12.04_amd64.deb
-  - sudo -E dpkg -i couchbase-server-enterprise_4.6.2-ubuntu12.04_amd64.deb
-  - rm -f couchbase-server-enterprise_4.6.2-ubuntu12.04_amd64.deb
+  - wget http://packages.couchbase.com/releases/3.1.0/couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb
+  - sudo dpkg-deb -x couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb $HOME
+  - cd $HOME/opt/couchbase
+  - sudo ./bin/install/reloc.sh `pwd`
+  - sudo ./bin/couchbase-server -- -noinput -detached
+  - sleep 20
 
 install:
   - travis_retry composer self-update && composer --version
