@@ -17,7 +17,7 @@ addons:
     - python
 
 before_install:
-  - wget --no-check-certificate https://packages.couchbase.com/releases/4.6.2/couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
+  - wget http://packages.couchbase.com/releases/4.6.2/couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
   - sudo dpkg -i couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
   - rm -f couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
 
