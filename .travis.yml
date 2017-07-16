@@ -11,9 +11,15 @@ cache:
   directories:
     - $HOME/.composer/cache
 
+addons:
+  apt:
+    packages:
+    - python
+
 before_install:
-  - chmod +x ./tests/data/travis/couchbase-setup.sh
-  - sudo ./tests/data/travis/couchbase-setup.sh
+  - wget https://packages.couchbase.com/releases/4.6.2/couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
+  - sudo dpkg -i couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
+  - rm -f couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
 
 install:
   - travis_retry composer self-update && composer --version
