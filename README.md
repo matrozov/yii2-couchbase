@@ -39,6 +39,8 @@ return [
         'couchbase' => [
             'class' => '\matrozov\couchbase\Connection',
             'dsn' => 'couchbase://localhost:11210',
+            'userName' => 'Administrator',
+            'password' => 'Administrator',
         ],
     ],
 ];

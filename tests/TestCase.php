@@ -8,28 +8,17 @@ use yii\helpers\ArrayHelper;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    protected static $params;
-
-    /**
-     * @var array Couchbase connection configuration
-     */
-    protected static $couchbaseDbConfig = [
-
-    ];
-
     /**
      * @var Connection Couchbase connection instance
      */
-    protected static $db;
     protected static $bucketName;
 
     public static function setUpBeforeClass()
     {
-        static::$params = require(__DIR__ . '/data/config.php');
+        $params = require(__DIR__ . '/data/config.php');
 
-        self::mockApplication(static::$params);
+        self::mockApplication($params);
 
-        self::$db = Yii::$app->couchbase;
         self::$bucketName = 'yii2test';
     }
 
@@ -47,20 +36,5 @@ class TestCase extends \PHPUnit\Framework\TestCase
             'vendorPath' => realpath(__DIR__ . '/../vendors'),
             'runtimePath' => dirname(__DIR__) . '/runtime',
         ], $config));
-    }
-
-    /**
-     * Returns a test configuration param from /data/config.php
-     * @param  string $name params name
-     * @param  mixed $default default value to use when param is not set.
-     * @return mixed  the value of the configuration param
-     */
-    public static function getParam($name, $default = null)
-    {
-        if (static::$params === null) {
-            static::$params = require(__DIR__ . '/data/config.php');
-        }
-
-        return isset(static::$params[$name]) ? static::$params[$name] : $default;
     }
 }

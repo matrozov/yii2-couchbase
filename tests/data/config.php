@@ -5,14 +5,14 @@
  */
 return [
     'id' => 'couchbase-tests',
-    'basePath' => realpath(__DIR__ . '/../../'),
+    'basePath' => dirname(__DIR__),
     'language' => 'en-US',
     'components' => [
         'couchbase' => [
             'class' => 'matrozov\couchbase\Connection',
             'dsn' => 'couchbase://localhost',
-            'managerUserName' => 'Administrator',
-            'managerPassword' => 'Administrator',
+            'userName' => 'Administrator',
+            'password' => 'Administrator',
         ],
     ],
 ];

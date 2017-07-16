@@ -386,7 +386,7 @@ class QueryBuilder extends Object
     {
         $bucketName = $this->db->quoteBucketName($bucketName);
 
-        return "DROP PRIMARY INDEX $bucketName";
+        return "DROP PRIMARY INDEX ON $bucketName";
     }
 
     /**
@@ -588,7 +588,7 @@ class QueryBuilder extends Object
             }
         }
 
-        return $bucketName;
+        return $bucketName[0];
     }
 
     /**

@@ -17,8 +17,8 @@ use yii\db\Expression;
  * Class Connection
  *
  * @property string         $dsn
- * @property string|null    $managerUserName
- * @property string|null    $managerPassword
+ * @property string|null    $userName
+ * @property string|null    $password
  * @property string         $bucketPrefix
  * @property string         $defaultBucket
  * @property Cluster        $cluster
@@ -52,14 +52,14 @@ class Connection extends Component
     public $dsn;
 
     /**
-     * @var string Couchbase manager username
+     * @var string Couchbase username for administration access.
      */
-    public $managerUserName;
+    public $userName;
 
     /**
-     * @var string Couchbase manager password
+     * @var string Couchbase password for administration access.
      */
-    public $managerPassword;
+    public $password;
 
     /**
      * @var string the common prefix or suffix for bucket names. If a bucket name is given
@@ -69,7 +69,7 @@ class Connection extends Component
     public $bucketPrefix = '';
 
     /**
-     * @var string Default bucket name
+     * @var string Default bucket name.
      */
     public $defaultBucket = 'default';
 
@@ -217,10 +217,6 @@ class Connection extends Component
 
             $this->cluster = new Cluster($this->dsn);
 
-            if ($this->managerUserName) {
-                $this->manager = $this->cluster->manager($this->managerUserName, $this->managerPassword);
-            }
-
             $this->initConnection();
 
             Yii::endProfile($token, __METHOD__);
@@ -247,17 +243,17 @@ class Connection extends Component
             $this->open();
         }
 
-        if (empty($this->managerUserName) || empty($this->managerPassword)) {
-            throw new InvalidConfigException($this->className() . '::managerUserName/managerPassword cannot be empty.');
+        if (empty($this->userName) || empty($this->password)) {
+            throw new InvalidConfigException($this->className() . '::userName/password cannot be empty.');
         }
 
-        $token = 'Opening CouchbaseManager: ' . $this->managerUserName;
+        $token = 'Opening CouchbaseManager: ' . $this->userName;
 
         try {
             Yii::trace($token, __METHOD__);
             Yii::beginProfile($token, __METHOD__);
 
-            $this->manager = $this->cluster->manager($this->managerUserName, $this->managerPassword);
+            $this->manager = $this->cluster->manager($this->userName, $this->password);
 
             Yii::endProfile($token, __METHOD__);
         }

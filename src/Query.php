@@ -29,6 +29,8 @@ class Query extends \yii\db\Query
 
         list($sql, $params) = $db->getQueryBuilder()->build($this);
 
-        return $db->createCommand($sql, $params);
+        $bucketName = is_array($this->from) ? reset($this->from) : $this->from;
+
+        return $db->createCommand($sql, $params)->setBucketName($bucketName);
     }
 }

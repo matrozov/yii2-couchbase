@@ -25,8 +25,8 @@ use yii\db\DataReader;
  */
 class Command extends Object
 {
-    const FETCH_ALL = 'fetchAll';
-    const FETCH_ONE = 'fetchOne';
+    const FETCH_ALL    = 'fetchAll';
+    const FETCH_ONE    = 'fetchOne';
     const FETCH_SCALAR = 'fetchScalar';
     const FETCH_COLUMN = 'fetchColumn';
 
@@ -48,6 +48,11 @@ class Command extends Object
     public $n1ql;
 
     /**
+     * @var string bucketName for N1QL execution
+     */
+    private $_bucketName;
+
+    /**
      * @var string the N1QL statement that this command represents
      */
     private $_sql;
@@ -67,6 +72,7 @@ class Command extends Object
             $this->cancel();
 
             $this->_sql = $this->db->quoteSql($sql);
+
             $this->params = [];
         }
 
@@ -144,6 +150,20 @@ class Command extends Object
     public function cancel()
     {
         $this->n1ql = null;
+    }
+
+    /**
+     * Set bucketName for N1QL execution
+     *
+     * @param $bucketName
+     *
+     * @return $this
+     */
+    public function setBucketName($bucketName)
+    {
+        $this->_bucketName = $bucketName;
+
+        return $this;
     }
 
     /**
@@ -241,7 +261,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->insert($bucketName, $data);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -271,7 +291,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->batchInsert($bucketName, $rows);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -298,7 +318,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->update($bucketName, $columns, $condition, $params);
 
-        return $this->setSql($sql)->bindValues($params);
+        return $this->setSql($sql)->setBucketName($bucketName)->bindValues($params);
     }
 
     /**
@@ -323,7 +343,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->upsert($bucketName, $id, $data);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -349,7 +369,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->delete($bucketName, $condition, $params);
 
-        return $this->setSql($sql)->bindValues($params);
+        return $this->setSql($sql)->setBucketName($bucketName)->bindValues($params);
     }
 
     /**
@@ -375,7 +395,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->count($bucketName, $condition, $params);
 
-        return $this->setSql($sql)->bindValues($params);
+        return $this->setSql($sql)->setBucketName($bucketName)->bindValues($params);
     }
 
     /**
@@ -390,7 +410,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->buildIndex($bucketName, $indexNames);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -406,7 +426,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->createPrimaryIndex($bucketName, $indexName, $options);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -420,7 +440,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->dropPrimaryIndex($bucketName);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -439,7 +459,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->createIndex($bucketName, $indexName, $columns, $condition, $params, $options);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -454,7 +474,7 @@ class Command extends Object
     {
         $sql = $this->db->getQueryBuilder()->dropIndex($bucketName, $indexName);
 
-        return $this->setSql($sql);
+        return $this->setSql($sql)->setBucketName($bucketName);
     }
 
     /**
@@ -475,7 +495,7 @@ class Command extends Object
         try {
             $profile and Yii::beginProfile($rawSql, __METHOD__);
 
-            $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
+            $res = $this->db->getBucket($this->_bucketName)->bucket->query($this->n1ql, true);
 
             if ($res->status === 'success') {
                 if (isset($res->metrics['mutationCount'])) {
@@ -582,7 +602,7 @@ class Command extends Object
         try {
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
 
-            $res = $this->db->getBucket()->bucket->query($this->n1ql, true);
+            $res = $this->db->getBucket($this->_bucketName)->bucket->query($this->n1ql, true);
 
             if ($res->status == 'success') {
                 switch ($method) {

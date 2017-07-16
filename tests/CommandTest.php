@@ -2,47 +2,46 @@
 
 namespace yiiunit\extensions\couchbase;
 
+use matrozov\couchbase\Query;
+use Yii;
+
 class CommandTest extends TestCase
 {
-    private static $id;
-
-    public function testInsert()
+    public function testCommand()
     {
-        self::$id = self::$db->insert(self::$bucketName, [
+        // Insert record
+
+        $id = Yii::$app->couchbase->insert(self::$bucketName, [
             'a' => 'hello',
         ]);
 
-        $this->assertNotFalse(self::$id);
-    }
+        $this->assertNotFalse($id);
 
-    public function testUpdate()
-    {
-        $affectedRows = self::$db->update(self::$bucketName, ['a' => 'hello2'], ['META().id' => self::$id]);
+        // Update record
 
-        $this->assertTrue($affectedRows === 1);
-    }
-
-    public function testDelete()
-    {
-        $affectedRows = self::$db->delete(self::$bucketName, ['META().id' => self::$id]);
+        $affectedRows = Yii::$app->couchbase->update(self::$bucketName, ['a' => 'hello2'], ['META().id' => $id]);
 
         $this->assertTrue($affectedRows === 1);
-    }
 
-    public function testBatchInsert()
-    {
-        $insertIds = self::$db->batchInsert(self::$bucketName, [
+        // Delete record
+
+        $affectedRows = Yii::$app->couchbase->delete(self::$bucketName, ['META().id' => $id]);
+
+        $this->assertTrue($affectedRows === 1);
+
+        // Batch insert
+
+        $insertIds = Yii::$app->couchbase->batchInsert(self::$bucketName, [
             ['a' => 'hello_1', 'case' => 'batch-insert'],
             ['a' => 'hello_2', 'case' => 'batch-insert'],
             ['a' => 'hello_3', 'case' => 'batch-insert'],
         ]);
 
         $this->assertTrue(count($insertIds) == 3);
-    }
 
-    public function testDeleteCondition()
-    {
-        $affectedRows = self::$db->delete(self::$bucketName, [
+        // Delete condition
+
+        $affectedRows = Yii::$app->couchbase->delete(self::$bucketName, [
             'case' => 'batch-insert',
         ]);
 
