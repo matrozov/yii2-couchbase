@@ -3,8 +3,7 @@ language: php
 php:
   - 7.0
 
-# faster builds on new travis setup not using sudo
-sudo: false
+sudo: required
 
 # cache vendor dirs
 cache:
@@ -18,10 +17,10 @@ addons:
 
 before_install:
   - wget http://packages.couchbase.com/releases/3.1.0/couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb
-  - sudo dpkg-deb -x couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb $HOME
+  - dpkg-deb -x couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb $HOME
   - cd $HOME/opt/couchbase
-  - sudo ./bin/install/reloc.sh `pwd`
-  - sudo ./bin/couchbase-server -- -noinput -detached
+  - ./bin/install/reloc.sh `pwd`
+  - ./bin/couchbase-server -- -noinput -detached
   - sleep 20
 
 install:
