@@ -5,12 +5,11 @@ This extension provides the [Couchbase](https://couchbase.com) integration for t
 
 For license information check the [LICENSE](LICENSE.md)-file.
 
-Installation
-------------
+## Installation
 
 This extension requires [Couchbase PHP Extension](https://developer.couchbase.com/documentation/server/current/sdk/php/start-using-sdk.html) version 2.3 or higher.
 
-This extension requires Couchbase server version 4.6 or higher.
+This extension requires [Couchbase server](https://www.couchbase.com/products/server) version 4.6 or higher.
 
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
 
@@ -27,8 +26,7 @@ or add
 
 to the require section of your composer.json.
 
-Configuration
--------------
+## Configuration
 
 To use this extension, simply add the following code in your application configuration:
 
