@@ -209,7 +209,7 @@ class MigrateController extends BaseMigrateController
      */
     protected function removeMigrationHistory($version)
     {
-        $this->db->getBucket($this->migrationBucket)->remove([
+        $this->db->getBucket($this->migrationBucket)->delete([
             'version' => $version,
         ]);
     }
