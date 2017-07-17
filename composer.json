@@ -1,6 +1,6 @@
 {
     "name": "matrozov/yii2-couchbase",
-    "description": "Couchbase extension for the Yii framework",
+    "description": "Couchbase extension for the Yii framework with ActiveRecord, Query and Migration support.",
     "keywords": ["yii2", "couchbase", "active-record"],
     "type": "yii2-extension",
     "homepage": "https://github.com/matrozov/yii2-couchbase",
