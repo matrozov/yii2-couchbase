@@ -1,4 +1,8 @@
 <?php
+/**
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
+ */
 
 namespace yiiunit\extensions\couchbase;
 
@@ -11,7 +15,7 @@ class CommandTest extends TestCase
     {
         // Insert record
 
-        $id = Yii::$app->couchbase->insert(self::$bucketName, [
+        $id = self::$db->insert(self::$bucketName, [
             'a' => 'hello',
         ]);
 
@@ -19,19 +23,19 @@ class CommandTest extends TestCase
 
         // Update record
 
-        $affectedRows = Yii::$app->couchbase->update(self::$bucketName, ['a' => 'hello2'], ['META().id' => $id]);
+        $affectedRows = self::$db->update(self::$bucketName, ['a' => 'hello2'], ['META().id' => $id]);
 
         $this->assertTrue($affectedRows === 1);
 
         // Delete record
 
-        $affectedRows = Yii::$app->couchbase->delete(self::$bucketName, ['META().id' => $id]);
+        $affectedRows = self::$db->delete(self::$bucketName, ['META().id' => $id]);
 
         $this->assertTrue($affectedRows === 1);
 
         // Batch insert
 
-        $insertIds = Yii::$app->couchbase->batchInsert(self::$bucketName, [
+        $insertIds = self::$db->batchInsert(self::$bucketName, [
             ['a' => 'hello_1', 'case' => 'batch-insert'],
             ['a' => 'hello_2', 'case' => 'batch-insert'],
             ['a' => 'hello_3', 'case' => 'batch-insert'],
@@ -41,7 +45,7 @@ class CommandTest extends TestCase
 
         // Delete condition
 
-        $affectedRows = Yii::$app->couchbase->delete(self::$bucketName, [
+        $affectedRows = self::$db->delete(self::$bucketName, [
             'case' => 'batch-insert',
         ]);
 

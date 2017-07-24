@@ -1,4 +1,8 @@
 <?php
+/**
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
+ */
 
 namespace yiiunit\extensions\couchbase;
 
@@ -12,7 +16,7 @@ class ManageBucketTest extends TestCase
         // Create bucket
 
         try {
-            Yii::$app->couchbase->createBucket('yii2test-new-bucket');
+            self::$db->createBucket('yii2test-new-bucket');
         }
         catch (\Exception $e) {
             $this->assertTrue(false);
@@ -21,7 +25,7 @@ class ManageBucketTest extends TestCase
         // List bucket
 
         try {
-            $list = Yii::$app->couchbase->listBuckets();
+            $list = self::$db->listBuckets();
         }
         catch (\Exception $e) {
             $list = [];
@@ -35,7 +39,7 @@ class ManageBucketTest extends TestCase
         // Drop bucket
 
         try {
-            Yii::$app->couchbase->dropBucket('yii2test-new-bucket');
+            self::$db->dropBucket('yii2test-new-bucket');
         }
         catch (\Exception $e) {
             $this->assertTrue(false);

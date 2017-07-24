@@ -1,13 +1,10 @@
 dist: trusty
-
+sudo: required
 language: php
 
 php:
   - 7.0
 
-sudo: required
-
-# cache vendor dirs
 cache:
   directories:
     - $HOME/.composer/cache
@@ -15,16 +12,26 @@ cache:
 addons:
   apt:
     packages:
-    - python
-
-before_install:
-  - chmod -x ./tests/data/travis/couchbase-setup.sh
-  - sudo ./tests/data/travis/couchbase-setup.sh
+      - python
 
 install:
   - travis_retry composer self-update && composer --version
   - travis_retry composer global require "fxp/composer-asset-plugin:^1.2.0"
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
 
+before_script:
+  - sudo sysctl vm.swappiness=0
+  - wget http://packages.couchbase.com/releases/4.6.2/couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
+  - sudo dpkg -i couchbase-server-enterprise_4.6.2-ubuntu14.04_amd64.deb
+  - wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-2-amd64.deb
+  - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
+  - sudo apt-get -y update
+  - sudo apt-get -y install libcouchbase-dev build-essential zlib1g-dev
+  - pecl install pcs-1.3.3
+  - pecl install igbinary
+  - pecl install couchbase
+  - /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091 --cluster-username=Administrator --cluster-password=Administrator --cluster-port=8091 --cluster-ramsize=2048 --cluster-index-ramsize=512 --services=data,index,query,fts
+  - /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=default --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=256 -u Administrator -p Administrator
+
 script:
-  - phpunit --verbose $PHPUNIT_FLAGS
+  - echo -e "hello couchbase"

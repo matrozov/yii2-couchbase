@@ -512,7 +512,7 @@ class Command extends Object
             $profile and Yii::endProfile($rawSql, __METHOD__);
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
-            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
+            throw new Exception($e->getMessage() . PHP_EOL . ' Sql query: ' . $rawSql, (int)$e->getCode(), $e);
         }
 
         return $result;
@@ -648,7 +648,7 @@ class Command extends Object
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
             //throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
             //TODO: FixIt
-            throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
+            throw new Exception($e->getMessage() . PHP_EOL . ' Sql query: ' . $rawSql, (int)$e->getCode(), $e);
         }
 
         return $result;

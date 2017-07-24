@@ -1025,7 +1025,7 @@ class QueryBuilder extends Object
         }
 
         if (count($sqlValues) > 1) {
-            return "$column $operator (" . implode(', ', $sqlValues) . ')';
+            return "$column $operator [" . implode(', ', $sqlValues) . ']';
         }
         else {
             $operator = $operator === 'IN' ? '=' : '<>';

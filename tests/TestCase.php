@@ -1,4 +1,8 @@
 <?php
+/**
+ * @link https://github.com/matrozov/yii2-couchbase
+ * @author Oleg Matrozov <oleg.matrozov@gmail.com>
+ */
 
 namespace yiiunit\extensions\couchbase;
 
@@ -11,6 +15,11 @@ class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @var Connection Couchbase connection instance
      */
+    protected static $db;
+
+    /**
+     * @var string bucket name for test cases
+     */
     protected static $bucketName;
 
     public static function setUpBeforeClass()
@@ -20,6 +29,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         self::mockApplication($params);
 
         self::$bucketName = 'yii2test';
+        self::$db = Yii::$app->couchbase;
     }
 
     /**
