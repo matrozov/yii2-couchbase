@@ -34,4 +34,4 @@ before_script:
   - /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=default --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=256 -u Administrator -p Administrator
 
 script:
-  - echo -e "hello couchbase"
+  - phpunit --verbose $PHPUNIT_FLAGS
