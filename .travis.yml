@@ -34,8 +34,8 @@ before_script:
   - wget https://phar.phpunit.de/phpunit.phar
   - chmod +x phpunit.phar
   - sudo mv phpunit.phar /usr/local/bin/phpunit
-  - phpunit --version
+  - /usr/local/bin/phpunit --version
   - composer install
 
 script:
-  - phpunit --verbose $PHPUNIT_FLAGS
+  - /usr/local/bin/phpunit --verbose $PHPUNIT_FLAGS
