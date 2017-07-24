@@ -16,6 +16,9 @@
         "yiisoft/yii2": "^2.0",
         "ext-couchbase": "^2.3"
     },
+    "require-dev": {
+        "phpunit/phpunit": "6.2.*"
+    },
     "autoload": {
         "psr-4": {
             "matrozov\\couchbase\\": "src"
