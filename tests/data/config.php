@@ -10,7 +10,7 @@ return [
     'components' => [
         'couchbase' => [
             'class' => 'matrozov\couchbase\Connection',
-            'dsn' => 'http://127.0.0.1:8091',
+            'dsn' => 'couchbase://localhost',
             'userName' => 'Administrator',
             'password' => 'Administrator',
         ],
