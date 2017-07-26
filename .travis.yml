@@ -30,7 +30,6 @@ before_script:
   - pecl install igbinary
   - pecl install couchbase
   - /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091 --cluster-init-username=Administrator --cluster-init-password=Administrator --cluster-init-port=8091 --cluster-init-ramsize=2048 --cluster-index-ramsize=512 --services=data,index,query
-  - /opt/couchbase/bin/couchbase-cli server-add -c 127.0.0.1:8091 -u Administrator -p Administrator --server-add=127.0.0.1:8091 --server-add-username=Administrator --server-add-password=Administrator
   - /opt/couchbase/bin/couchbase-cli rebalance -c 127.0.0.1:8091 -u Administrator -p Administrator
   - /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=default --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=256 -u Administrator -p Administrator
   - /opt/couchbase/bin/cbq -c 127.0.0.1:8091 -u Administrator -p Administrator -s="CREATE PRIMARY INDEX ON \`yii2test\`"
