@@ -68,6 +68,6 @@ class QueryTest extends TestCase
             ->where(['var_3' => ['test_1', 'test_2']])
             ->count();
 
-        $this->assertEquals($res, 3);
+        $this->assertEquals($res, 2);
     }
 }
