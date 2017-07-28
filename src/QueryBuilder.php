@@ -102,12 +102,13 @@ class QueryBuilder extends Object
         $clauses = [
             $this->buildSelect($query->select, $params, $query->distinct, $query->selectOption, $query),
             $this->buildFrom($query->from, $params),
+            $this->buildUseKeys($query->useKeys, $params),
             $this->buildUseIndex($query->useIndex, $params),
             $this->buildJoin($query->join, $params),
             $this->buildWhere($query->where, $params),
-            $this->buildGroupBy($query->groupBy),
+            $this->buildGroupBy($query->groupBy, $params),
             $this->buildHaving($query->having, $params),
-            $this->buildOrderBy($query->orderBy),
+            $this->buildOrderBy($query->orderBy, $params),
             $this->buildLimitOffset($query->limit, $query->offset),
         ];
 
@@ -516,6 +517,22 @@ class QueryBuilder extends Object
     }
 
     /**
+     * @param array $useKeys
+     * @param array $params the binding parameters to be populated
+     * @return string the USE [PRIMARY] KEYS clause built from [[Query::$useKeys]].
+     */
+    public function buildUseKeys($useKeys, &$params)
+    {
+        if (empty($useKeys)) {
+            return '';
+        }
+
+        $primary  = $useKeys['primary'] ? 'PRIMARY ' : '';
+
+        return 'USE ' . $primary . 'KEYS ' . $useKeys['keys'];
+    }
+
+    /**
      * @param array $useIndex
      * @param array $params the binding parameters to be populated
      * @return string the USE INDEX clause built from [[Query::$useIndex]].
@@ -620,9 +637,10 @@ class QueryBuilder extends Object
 
     /**
      * @param array $columns
+     * @param array $params the binding parameters to be populated
      * @return string the GROUP BY clause
      */
-    public function buildGroupBy($columns)
+    public function buildGroupBy($columns, &$params)
     {
         if (empty($columns)) {
             return '';
@@ -654,9 +672,10 @@ class QueryBuilder extends Object
 
     /**
      * @param array $columns
+     * @param array $params the binding parameters to be populated
      * @return string the ORDER BY clause built from [[Query::$orderBy]].
      */
-    public function buildOrderBy($columns)
+    public function buildOrderBy($columns, &$params)
     {
         if (empty($columns)) {
             return '';

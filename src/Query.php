@@ -15,6 +15,16 @@ use Yii;
  */
 class Query extends \yii\db\Query
 {
+    /**
+     * @var array the condition to be applied in the USE [PRIMARY] KEYS clause.
+     * It can be either a array. Please refer to [[useKeys()]] on how to specify the condition.
+     */
+    public $useKeys;
+
+    /**
+     * @var array the condition to be applied in the USE INDX clause.
+     * It can be either a array. Please refer to [[useIndex()]] on how to specify the condition.
+     */
     public $useIndex;
 
     /**
@@ -37,9 +47,22 @@ class Query extends \yii\db\Query
     }
 
     /**
+     * Sets the USE [PRIMARY] KEYS part of the query.
+     * @param string $keys expression.
+     * @param bool $primary USE PRIMARY KEYS.
+     *
+     * @return $this the query object itself
+     */
+    public function useKeys($keys, $primary = false)
+    {
+        $this->useKeys = ['keys' => $keys, 'primary' => $primary];
+        return $this;
+    }
+
+    /**
      * Sets the USE INDEX part of the query.
      * @param string $index index name.
-     * @param string $using null/GSI/VIEW
+     * @param null|string $using GSI/VIEW
      *
      * @return $this the query object itself
      */
