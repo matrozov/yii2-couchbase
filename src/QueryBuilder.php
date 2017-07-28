@@ -522,7 +522,6 @@ class QueryBuilder extends Object
      */
     public function buildJoin($joins, &$params)
     {
-        //TODO: FixIt
         if (empty($joins)) {
             return '';
         }
@@ -535,8 +534,7 @@ class QueryBuilder extends Object
             // 0:join type, 1:join bucket, 2:on-condition (optional)
             list($joinType, $bucketName) = $join;
 
-            $bucketNames = $this->quoteBucketName($bucketName, $params);
-            $bucketName = reset($bucketNames);
+            $bucketName = $this->quoteBucketName($bucketName, $params);
             $joins[$i] = "$joinType $bucketName";
 
             if (isset($join[2])) {
@@ -588,7 +586,7 @@ class QueryBuilder extends Object
             }
         }
 
-        return $bucketName[0];
+        return reset($bucketName);
     }
 
     /**
@@ -704,7 +702,7 @@ class QueryBuilder extends Object
     /**
      * @param array $unions
      * @param array $params the binding parameters to be populated
-     * @return string the UNION clause built from [[Query::$union]].
+     * @return string the UNION, INTERSECT and EXCEPT clause built from [[Query::$union]].
      */
     public function buildUnion($unions, &$params)
     {
@@ -721,7 +719,7 @@ class QueryBuilder extends Object
                 list($unions[$i]['query'], $params) = $this->build($query, $params);
             }
 
-            $result .= 'UNION ' . ($union['all'] ? 'ALL ' : '') . '( ' . $unions[$i]['query'] . ' ) ';
+            $result .= $union['type'] . ' ' . ($union['all'] ? 'ALL ' : '') . '( ' . $unions[$i]['query'] . ' ) ';
         }
 
         return trim($result);

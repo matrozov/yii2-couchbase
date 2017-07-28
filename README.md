@@ -1,7 +1,7 @@
 Couchbase Extension for Yii2
 ============================
 
-This extension provides the [Couchbase](https://couchbase.com) integration for the [Yii framework 2.0](http://www.yiiframework.com) with ActiveRecord and Migration supports.
+This extension provides the [Couchbase](https://couchbase.com) integration for the [Yii framework 2.0](http://www.yiiframework.com) with ActiveRecord, QueryBuilder and Migration supports.
 
 For license information check the [LICENSE](LICENSE.md)-file.
 

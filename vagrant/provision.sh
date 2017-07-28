@@ -37,6 +37,7 @@ ln -s /etc/php/7.0/mods-available/igbinary.ini /etc/php/7.0/cli/conf.d/20-igbina
 echo "extension=couchbase.so" > /etc/php/7.0/mods-available/couchbase.ini
 ln -s /etc/php/7.0/mods-available/couchbase.ini /etc/php/7.0/cli/conf.d/30-couchbase.ini
 /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091 --cluster-init-username=Administrator --cluster-init-password=Administrator --cluster-init-port=8091 --cluster-init-ramsize=2048 --cluster-index-ramsize=512 --services=data,index,query,fts
+/opt/couchbase/bin/couchbase-cli rebalance -c 127.0.0.1:8091 -u Administrator -p Administrator
 /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=yii2test --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=256 -u Administrator -p Administrator
 /opt/couchbase/bin/cbq -e http://127.0.0.1:8091 -u Administrator -p Administrator -s="CREATE PRIMARY INDEX ON \`yii2test\`"
 

@@ -33,4 +33,40 @@ class Query extends \yii\db\Query
 
         return $db->createCommand($sql, $params)->setBucketName($bucketName);
     }
+
+    /**
+     * Appends a SQL statement using UNION operator.
+     * @param string|Query $sql the SQL statement to be appended using UNION
+     * @param bool $all TRUE if using UNION ALL and FALSE if using UNION
+     * @return $this the query object itself
+     */
+    public function union($sql, $all = false)
+    {
+        $this->union[] = ['type' => 'UNION', 'query' => $sql, 'all' => $all];
+        return $this;
+    }
+
+    /**
+     * Appends a SQL statement using INTERSECT operator.
+     * @param string|Query $sql the SQL statement to be appended using INTERSECT
+     * @param bool $all TRUE if using INTERSECT ALL and FALSE if using INTERSECT
+     * @return $this the query object itself
+     */
+    public function intersect($sql, $all = false)
+    {
+        $this->union[] = ['type' => 'INTERSECT', 'query' => $sql, 'all' => $all];
+        return $this;
+    }
+
+    /**
+     * Appends a SQL statement using EXCEPT operator.
+     * @param string|Query $sql the SQL statement to be appended using EXCEPT
+     * @param bool $all TRUE if using EXCEPT ALL and FALSE if using EXCEPT
+     * @return $this the query object itself
+     */
+    public function except($sql, $all = false)
+    {
+        $this->union[] = ['type' => 'EXCEPT', 'query' => $sql, 'all' => $all];
+        return $this;
+    }
 }
