@@ -385,6 +385,9 @@ class Connection extends Component
         $this->openManager();
 
         $this->manager->createBucket($bucketName, $options);
+
+        // ToDo: https://github.com/matrozov/yii2-couchbase/issues/1
+        sleep(5);
     }
 
     /**
@@ -399,6 +402,9 @@ class Connection extends Component
         $this->openManager();
 
         $this->manager->removeBucket($bucketName);
+
+        // ToDo: https://github.com/matrozov/yii2-couchbase/issues/1
+        sleep(5);
     }
 
     /**

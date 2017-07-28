@@ -15,6 +15,8 @@ use Yii;
  */
 class Query extends \yii\db\Query
 {
+    public $useIndex;
+
     /**
      * Creates a DB command that can be used to execute this query.
      * @param Connection $db the database connection used to generate the SQL statement.
@@ -32,6 +34,19 @@ class Query extends \yii\db\Query
         $bucketName = is_array($this->from) ? reset($this->from) : $this->from;
 
         return $db->createCommand($sql, $params)->setBucketName($bucketName);
+    }
+
+    /**
+     * Sets the USE INDEX part of the query.
+     * @param string $index index name.
+     * @param string $using null/GSI/VIEW
+     *
+     * @return $this the query object itself
+     */
+    public function useIndex($index, $using = null)
+    {
+        $this->useIndex = ['index' => $index, 'using' => $using];
+        return $this;
     }
 
     /**

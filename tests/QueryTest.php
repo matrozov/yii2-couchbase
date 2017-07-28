@@ -18,8 +18,6 @@ class QueryTest extends TestCase
     {
         self::$db->createBucket(self::$bucketNameJoin);
 
-        sleep(5);
-
         self::$db->createPrimaryIndex(self::$bucketNameJoin);
 
         $id = self::$db->insert(self::$bucketNameJoin, [

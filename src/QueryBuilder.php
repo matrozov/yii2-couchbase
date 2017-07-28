@@ -102,6 +102,7 @@ class QueryBuilder extends Object
         $clauses = [
             $this->buildSelect($query->select, $params, $query->distinct, $query->selectOption, $query),
             $this->buildFrom($query->from, $params),
+            $this->buildUseIndex($query->useIndex, $params),
             $this->buildJoin($query->join, $params),
             $this->buildWhere($query->where, $params),
             $this->buildGroupBy($query->groupBy),
@@ -512,6 +513,22 @@ class QueryBuilder extends Object
         $bucketName = $this->quoteBucketName($bucketName, $params);
 
         return 'FROM ' . $bucketName;
+    }
+
+    /**
+     * @param array $useIndex
+     * @param array $params the binding parameters to be populated
+     * @return string the USE INDEX clause built from [[Query::$useIndex]].
+     */
+    public function buildUseIndex($useIndex, &$params)
+    {
+        if (empty($useIndex)) {
+            return '';
+        }
+
+        $using = $useIndex['using'] ? ' USING ' . $useIndex['using'] : '';
+
+        return 'USE INDEX (' . $useIndex['index'] . $using;
     }
 
     /**

@@ -17,6 +17,7 @@
         "ext-couchbase": "^2.3"
     },
     "require-dev": {
+        "php": ">=7.0",
         "phpunit/phpunit": "^6.0"
     },
     "autoload": {
