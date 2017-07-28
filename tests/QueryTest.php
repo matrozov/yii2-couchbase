@@ -12,12 +12,24 @@ use Yii;
 
 class QueryTest extends TestCase
 {
+    public static $bucketNameJoin = 'yii2test-join';
+
     protected function setUp()
     {
+        self::$db->createBucket(self::$bucketNameJoin);
+
+        sleep(1);
+
+        self::$db->createPrimaryIndex(self::$bucketNameJoin);
+
+        $id = self::$db->insert(self::$bucketNameJoin, [
+            'var_4' => 'bugaga',
+        ]);
+
         $rows = [];
 
         for ($i = 0; $i < 100; $i++) {
-            $rows[] = ['var_1' => $i, 'var_2' => 99 - $i, 'var_3' => 'test_' . $i];
+            $rows[] = ['var_1' => $i, 'var_2' => 99 - $i, 'var_3' => 'test_' . $i, 'var_rel' => $id];
         }
 
         self::$db->batchInsert(self::$bucketName, $rows);
@@ -26,6 +38,8 @@ class QueryTest extends TestCase
     protected function tearDown()
     {
         self::$db->delete(self::$bucketName);
+
+        self::$db->dropBucket(self::$bucketNameJoin);
     }
 
     public function testCommand()
@@ -69,5 +83,29 @@ class QueryTest extends TestCase
             ->count();
 
         $this->assertEquals($res, 2);
+
+        // JOIN
+
+        /*$res = (new Query)
+            ->from(self::$bucketNameJoin)
+            ->join('JOIN', ['b' => self::$bucketName], '`b`.`var_rel`')
+            ->createCommand()->rawSql;
+
+        echo PHP_EOL . PHP_EOL;
+        echo $res;
+        echo PHP_EOL . PHP_EOL;*/
+
+        // UNION
+
+        $q = (new Query)
+            ->from(self::$bucketName)
+            ->limit(1);
+
+        $res = (new Query)
+            ->from(self::$bucketNameJoin)
+            ->union($q)
+            ->all();
+
+        $this->assertCount(2, $res);
     }
 }
