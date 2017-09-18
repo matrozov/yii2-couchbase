@@ -107,15 +107,11 @@ class ActiveQuery extends Query implements ActiveQueryInterface
             $db = $modelClass::getDb();
         }
 
-        if ($this->sql === null) {
-            list ($sql, $params) = $db->getQueryBuilder()->build($this);
-        }
-        else {
-            $sql = $this->sql;
-            $params = $this->params;
-        }
+        list($sql, $params) = $db->getQueryBuilder()->build($this);
 
-        return $db->createCommand($sql, $params);
+        $bucketName = is_array($this->from) ? reset($this->from) : $this->from;
+
+        return $db->createCommand($sql, $params)->setBucketName($bucketName);
     }
 
     /**
