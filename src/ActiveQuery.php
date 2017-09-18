@@ -93,6 +93,32 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
+     * Creates a DB command that can be used to execute this query.
+     * @param Connection|null $db the DB connection used to create the DB command.
+     * If `null`, the DB connection returned by [[modelClass]] will be used.
+     * @return Command the created DB command instance.
+     */
+    public function createCommand($db = null)
+    {
+        /* @var $modelClass ActiveRecord */
+        $modelClass = $this->modelClass;
+
+        if ($db === null) {
+            $db = $modelClass::getDb();
+        }
+
+        if ($this->sql === null) {
+            list ($sql, $params) = $db->getQueryBuilder()->build($this);
+        }
+        else {
+            $sql = $this->sql;
+            $params = $this->params;
+        }
+
+        return $db->createCommand($sql, $params);
+    }
+
+    /**
      * Executes query and returns all results as an array.
      * @param Connection $db the Couchbase connection used to execute the query.
      * If null, the Couchbase connection returned by [[modelClass]] will be used.
