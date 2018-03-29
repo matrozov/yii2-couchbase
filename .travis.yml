@@ -3,7 +3,9 @@ sudo: required
 language: php
 
 php:
+  - 7.1
   - 7.2
+  - 7.3
 
 cache:
   directories:
@@ -32,9 +34,9 @@ before_script:
   - /opt/couchbase/bin/couchbase-cli rebalance -c 127.0.0.1:8091 -u Administrator -p Administrator
   - /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=yii2test --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=256 -u Administrator -p Administrator
   - /opt/couchbase/bin/cbq -c 127.0.0.1:8091 -u Administrator -p Administrator -s="CREATE PRIMARY INDEX ON \`yii2test\`"
-  - wget https://phar.phpunit.de/phpunit.phar
-  - chmod +x phpunit.phar
-  - sudo mv phpunit.phar /usr/local/bin/phpunit
+  - wget https://phar.phpunit.de/phpunit-7.0.3.phar
+  - chmod +x phpunit-7.0.3.phar
+  - sudo mv phpunit-7.0.3.phar /usr/local/bin/phpunit
   - /usr/local/bin/phpunit --version
   - composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
 
