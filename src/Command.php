@@ -8,7 +8,7 @@ namespace matrozov\couchbase;
 
 use Couchbase\N1qlQuery;
 use Yii;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\db\DataReader;
 
 /**
@@ -23,7 +23,7 @@ use yii\db\DataReader;
  *
  * @package matrozov\couchbase
  */
-class Command extends Object
+class Command extends BaseObject
 {
     const FETCH_ALL    = 'fetchAll';
     const FETCH_ONE    = 'fetchOne';
