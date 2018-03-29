@@ -6,8 +6,7 @@
 
 namespace matrozov\couchbase;
 
-use yii\base\Object;
-use yii\db\Expression;
+use yii\base\BaseObject;
 
 /**
  * Class Bucket
@@ -18,7 +17,7 @@ use yii\db\Expression;
  *
  * @package matrozov\couchbase
  */
-class Bucket extends Object
+class Bucket extends BaseObject
 {
     /**
      * @var Connection Couchbase database instance
