@@ -12,6 +12,9 @@ use Yii;
  * Class Query
  *
  * @package matrozov\couchbase
+ *
+ * @property array $useKeys
+ * @property array $useIndex
  */
 class Query extends \yii\db\Query
 {
@@ -106,5 +109,30 @@ class Query extends \yii\db\Query
     {
         $this->union[] = ['type' => 'EXCEPT', 'query' => $sql, 'all' => $all];
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function create($from)
+    {
+        return new self([
+            'where' => $from->where,
+            'limit' => $from->limit,
+            'offset' => $from->offset,
+            'orderBy' => $from->orderBy,
+            'indexBy' => $from->indexBy,
+            'select' => $from->select,
+            'selectOption' => $from->selectOption,
+            'distinct' => $from->distinct,
+            'from' => $from->from,
+            'useKeys' => $from->useKeys,
+            'useIndex' => $from->useIndex,
+            'groupBy' => $from->groupBy,
+            'join' => $from->join,
+            'having' => $from->having,
+            'union' => $from->union,
+            'params' => $from->params,
+        ]);
     }
 }

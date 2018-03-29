@@ -12,6 +12,7 @@ use Yii;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\httpclient\Client;
 
 /**
  * Class Connection
@@ -402,6 +403,15 @@ class Connection extends Component
         $this->openManager();
 
         $this->manager->removeBucket($bucketName);
+
+        $url = '/pools/default/buckets/' . urlencode($bucketName);
+
+        $http = new Client();
+        $http->createRequest()
+            ->setMethod('DELETE')
+            ->setUrl($url)
+            ->addHeaders(['Authorization' => 'basic ' . base64_encode($this->userName . ':' . $this->password)])
+            ->send();
 
         // ToDo: https://github.com/matrozov/yii2-couchbase/issues/1
         sleep(5);
