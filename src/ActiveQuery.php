@@ -94,9 +94,13 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Creates a DB command that can be used to execute this query.
+     *
      * @param Connection|null $db the DB connection used to create the DB command.
-     * If `null`, the DB connection returned by [[modelClass]] will be used.
+     *                            If `null`, the DB connection returned by [[modelClass]] will be used.
+     *
      * @return Command the created DB command instance.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function createCommand($db = null)
     {
@@ -174,8 +178,12 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Returns the Couchbase bucket for this query.
+     *
      * @param Connection $db Couchbase connection.
+     *
      * @return Bucket bucket instance.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function getBucket($db = null)
     {

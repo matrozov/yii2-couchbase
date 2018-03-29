@@ -37,8 +37,9 @@ class Bucket extends BaseObject
     /**
      * Drops this bucket.
      *
-     * @throws Exception on failure.
      * @return bool whether the operation successful.
+     * @throws Exception on failure.
+     * @throws \yii\base\InvalidConfigException
      */
     public function drop()
     {
@@ -51,6 +52,8 @@ class Bucket extends BaseObject
      * @param array|object $data data to be inserted.
      *
      * @return string new record ID instance.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function insert($data)
     {
@@ -59,8 +62,12 @@ class Bucket extends BaseObject
 
     /**
      * Inserts several new rows into bucket.
+     *
      * @param array $rows array of arrays or objects to be inserted.
+     *
      * @return string[] inserted data, each row will have "_id" key assigned to it.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function batchInsert($rows)
     {
@@ -78,11 +85,13 @@ class Bucket extends BaseObject
      * Note: for "multi" mode Couchbase requires explicit strategy "$set" or "$inc"
      * to be specified for the "newData". If no strategy is passed "$set" will be used.
      *
-     * @param array $columns the object with which to update the matching records.
+     * @param array $columns   the object with which to update the matching records.
      * @param array $condition description of the objects to update.
-     * @param array $params list of options in format: optionName => optionValue.
+     * @param array $params    list of options in format: optionName => optionValue.
      *
      * @return int|bool number of updated documents or whether operation was successful.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function update($columns, $condition, $params = [])
     {
@@ -92,10 +101,12 @@ class Bucket extends BaseObject
     /**
      * Upsert record.
      *
-     * @param string $id the document id.
-     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     * @param string $id   the document id.
+     * @param array  $data the column data (name => value) to be inserted into the bucket or instance.
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function upsert($id, $data)
     {
@@ -108,6 +119,8 @@ class Bucket extends BaseObject
      * @param array|object $data data to be updated/inserted.
      *
      * @return int|null updated/new record id instance.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function save($data)
     {
@@ -130,9 +143,11 @@ class Bucket extends BaseObject
      * Delete data from the bucket.
      *
      * @param array $condition description of records to remove.
-     * @param array $options list of options in format: optionName => optionValue.
+     * @param array $options   list of options in format: optionName => optionValue.
      *
      * @return int|bool number of updated documents or whether operation was successful.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function delete($condition = [], $options = [])
     {
@@ -143,9 +158,11 @@ class Bucket extends BaseObject
      * Counts records in this bucket.
      *
      * @param array $condition query condition
-     * @param array $params list of options in format: optionName => optionValue.
+     * @param array $params    list of options in format: optionName => optionValue.
      *
      * @return int records count.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function count($condition = [], $params = [])
     {
@@ -158,6 +175,8 @@ class Bucket extends BaseObject
      * @param string|string[] $indexNames names of index
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function buildIndex($indexNames)
     {
@@ -171,6 +190,8 @@ class Bucket extends BaseObject
      * @param array       $options
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function createPrimaryIndex($indexName = null, $options = [])
     {
@@ -181,6 +202,8 @@ class Bucket extends BaseObject
      * Drop unnamed primary index.
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function dropPrimaryIndex()
     {
@@ -197,6 +220,8 @@ class Bucket extends BaseObject
      * @param array      $options
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function createIndex($indexName, $columns, $condition = null, &$params = [], $options = [])
     {
@@ -209,6 +234,8 @@ class Bucket extends BaseObject
      * @param string $indexName
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function dropIndex($indexName)
     {

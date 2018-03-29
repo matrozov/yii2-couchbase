@@ -118,11 +118,15 @@ class Connection extends Component
 
     /**
      * Returns the Couchbase bucket with the given name.
+     *
      * @param string $bucketName bucket name. If string considered as the name of the bucket
-     * inside the default database. If array - first element considered as the name of the database,
-     * second - as name of bucket inside that database
-     * @param string $password bucket password
+     *                           inside the default database. If array - first element considered as the name of the database,
+     *                           second - as name of bucket inside that database
+     * @param string $password   bucket password
+     *
      * @return Bucket Couchbase basket instance.
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function getBucket($bucketName = null, $password = null)
     {
@@ -145,6 +149,7 @@ class Connection extends Component
      *
      * @return Bucket|null bucket instance.
      * @throws Exception
+     * @throws InvalidConfigException
      */
     protected function selectBucket($name, $password = '')
     {
@@ -198,6 +203,7 @@ class Connection extends Component
      * Establishes a Couchbase connection.
      * It does nothing if a Couchbase connection has already been established.
      * @throws Exception if connection fails
+     * @throws InvalidConfigException
      */
     public function open()
     {
@@ -232,6 +238,7 @@ class Connection extends Component
      * Open a CouchbaseManager.
      * It does nothing if a CouchbaseManager has already been opened.
      * @throws Exception if open fails
+     * @throws InvalidConfigException
      */
     public function openManager()
     {
@@ -379,6 +386,7 @@ class Connection extends Component
      * @param array  $options    bucket options in format: "name" => "value"
      *
      * @throws Exception
+     * @throws InvalidConfigException
      */
     public function createBucket($bucketName, array $options = [])
     {
@@ -396,6 +404,7 @@ class Connection extends Component
      * @param string $bucketName name of the bucket to be dropped.
      *
      * @throws Exception
+     * @throws InvalidConfigException
      */
     public function dropBucket($bucketName)
     {
@@ -413,6 +422,7 @@ class Connection extends Component
      * @return array buckets information.
      *
      * @throws Exception
+     * @throws InvalidConfigException
      */
     public function listBuckets()
     {
@@ -425,9 +435,11 @@ class Connection extends Component
      * Insert record.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $data the column data (name => value) to be inserted into the bucket or instance
+     * @param array  $data       the column data (name => value) to be inserted into the bucket or instance
      *
      * @return string inserted id
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function insert($bucketName, $data)
     {
@@ -438,9 +450,11 @@ class Connection extends Component
      * Batch insert record.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $rows the rows to be batch inserted into the bucket
+     * @param array  $rows       the rows to be batch inserted into the bucket
      *
      * @return int[]|false inserted ids
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function batchInsert($bucketName, $rows)
     {
@@ -450,13 +464,15 @@ class Connection extends Component
     /**
      * Update record.
      *
-     * @param string $bucketName the bucket to be updated.
-     * @param array $columns the column data (name => value) to be updated.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket to be updated.
+     * @param array        $columns    the column data (name => value) to be updated.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return int affected rows
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function update($bucketName, $columns, $condition, $params = [])
     {
@@ -467,10 +483,12 @@ class Connection extends Component
      * Upsert record.
      *
      * @param string $bucketName the bucket to be updated.
-     * @param string $id the document id.
-     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     * @param string $id         the document id.
+     * @param array  $data       the column data (name => value) to be inserted into the bucket or instance.
      *
      * @return bool
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function upsert($bucketName, $id, $data)
     {
@@ -480,12 +498,14 @@ class Connection extends Component
     /**
      * Delete record
      *
-     * @param string $bucketName the bucket where the data will be deleted from.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return int affected rows
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function delete($bucketName, $condition = '', $params = [])
     {
@@ -496,10 +516,12 @@ class Connection extends Component
      * Counts records in this bucket.
      *
      * @param string $bucketName the bucket where the data will be deleted from.
-     * @param array $condition query condition
-     * @param array $params list of options in format: optionName => optionValue.
+     * @param string $condition  query condition
+     * @param array  $params     list of options in format: optionName => optionValue.
      *
      * @return int records count.
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function count($bucketName, $condition = '', $params = [])
     {
@@ -513,6 +535,8 @@ class Connection extends Component
      * @param string|string[] $indexNames names of index
      *
      * @return bool
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function buildIndex($bucketName, $indexNames)
     {
@@ -527,6 +551,8 @@ class Connection extends Component
      * @param array       $options
      *
      * @return bool
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
     {
@@ -539,6 +565,8 @@ class Connection extends Component
      * @param string $bucketName
      *
      * @return bool
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function dropPrimaryIndex($bucketName)
     {
@@ -556,6 +584,8 @@ class Connection extends Component
      * @param array      $options
      *
      * @return bool
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
     {
@@ -569,6 +599,8 @@ class Connection extends Component
      * @param string $indexName
      *
      * @return bool
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function dropIndex($bucketName, $indexName)
     {

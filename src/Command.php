@@ -84,6 +84,8 @@ class Command extends BaseObject
      * Note that the return value of this method should mainly be used for logging purpose.
      * It is likely that this method returns an invalid SQL due to improper replacement of parameter placeholders.
      * @return string the raw SQL with parameter values inserted into the corresponding placeholders in [[sql]].
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function getRawSql()
     {
@@ -127,6 +129,10 @@ class Command extends BaseObject
         return $sql;
     }
 
+    /**
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
+     */
     public function prepare()
     {
         $sql = $this->getSql();
@@ -138,7 +144,7 @@ class Command extends BaseObject
             $this->n1ql->namedParams($this->params);
             $this->n1ql->consistency(N1qlQuery::REQUEST_PLUS);
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
@@ -306,13 +312,14 @@ class Command extends BaseObject
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $bucketName the bucket to be updated.
-     * @param array $columns the column data (name => value) to be updated.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket to be updated.
+     * @param array        $columns    the column data (name => value) to be updated.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return $this the command object itself
+     * @throws Exception
      */
     public function update($bucketName, $columns, $condition, $params = [])
     {
@@ -358,12 +365,13 @@ class Command extends BaseObject
      *
      * Note that the created command is not executed until [[execute()]] is called.
      *
-     * @param string $bucketName the bucket where the data will be deleted from.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return $this the command object itself
+     * @throws Exception
      */
     public function delete($bucketName, $condition = '', $params = [])
     {
@@ -384,12 +392,13 @@ class Command extends BaseObject
      *
      * Note that the created command is not executed until [[queryScalar()]] is called.
      *
-     * @param string $bucketName the bucket where the data will be deleted from.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return $this the command object itself
+     * @throws Exception
      */
     public function count($bucketName, $condition = '', $params = [])
     {
@@ -454,6 +463,7 @@ class Command extends BaseObject
      * @param array      $options
      *
      * @return $this the command object itself
+     * @throws Exception
      */
     public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
     {
@@ -483,6 +493,7 @@ class Command extends BaseObject
      * No result set will be returned.
      * @return int|bool number of rows affected by the execution.
      * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function execute()
     {
@@ -523,6 +534,7 @@ class Command extends BaseObject
      * This method is for executing a SQL query that returns result set, such as `SELECT`.
      * @return DataReader the reader object for fetching the query result
      * @throws Exception execution failed
+     * @throws \yii\base\InvalidConfigException
      */
     public function query()
     {
@@ -533,6 +545,8 @@ class Command extends BaseObject
      * Executes the SQL statement and returns ALL rows at once.
      * @return array all rows of the query result. Each array element is an array representing a row of data.
      * An empty array is returned if the query results in nothing.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
      * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      */
@@ -546,6 +560,8 @@ class Command extends BaseObject
      * This method is best used when only the first row of result is needed for a query.
      * @return array|false the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      * @internal param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://php.net/manual/en/pdostatement.setfetchmode.php)
      * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      */
@@ -562,6 +578,8 @@ class Command extends BaseObject
      *
      * @return false|null|string the value of the first column in the first row of the query result.
      * False is returned if there is no value.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function queryScalar($columnName = null)
     {
@@ -576,6 +594,8 @@ class Command extends BaseObject
      * @param null|string $columnName
      *
      * @return array the first column of the query result. Empty array is returned if the query results in nothing.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function queryColumn($columnName = null)
     {
@@ -590,6 +610,7 @@ class Command extends BaseObject
      *
      * @return mixed the method execution result
      * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     protected function queryInternal($method = null, $columnName = null)
     {
@@ -657,9 +678,13 @@ class Command extends BaseObject
     /**
      * Logs the current database query if query logging is enabled and returns
      * the profiling token if profiling is enabled.
+     *
      * @param string $category the log category.
+     *
      * @return array array of two elements, the first is boolean of whether profiling is enabled or not.
      * The second is the rawSql if it has been created.
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     private function logQuery($category)
     {

@@ -32,9 +32,13 @@ abstract class Migration extends Component implements MigrationInterface
     /**
      * Executes a N1QL statement.
      * This method executes the specified SQL statement using [[db]].
-     * @param string $sql the SQL statement to be executed
-     * @param array $params input parameters (name => value) for the SQL execution.
-     * See [[Command::execute()]] for more details.
+     *
+     * @param string $sql    the SQL statement to be executed
+     * @param array  $params input parameters (name => value) for the SQL execution.
+     *                       See [[Command::execute()]] for more details.
+     *
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function execute($sql, $params = [])
     {
@@ -49,8 +53,12 @@ abstract class Migration extends Component implements MigrationInterface
 
     /**
      * Creates new bucket with the specified options.
+     *
      * @param string $bucketName name of the bucket
-     * @param array $options bucket options in format: "name" => "value"
+     * @param array  $options    bucket options in format: "name" => "value"
+     *
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function createBucket($bucketName, $options = [])
     {
@@ -63,7 +71,11 @@ abstract class Migration extends Component implements MigrationInterface
 
     /**
      * Drops existing bucket.
+     *
      * @param string $bucketName name of the bucket
+     *
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function dropBucket($bucketName)
     {
@@ -78,9 +90,11 @@ abstract class Migration extends Component implements MigrationInterface
      * Insert record.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $data the column data (name => value) to be inserted into the bucket or instance
+     * @param array  $data       the column data (name => value) to be inserted into the bucket or instance
      *
      * @return int|false inserted id
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function insert($bucketName, $data)
     {
@@ -97,9 +111,11 @@ abstract class Migration extends Component implements MigrationInterface
      * Batch insert record.
      *
      * @param string $bucketName the bucket that new rows will be inserted into.
-     * @param array $rows the rows to be batch inserted into the bucket
+     * @param array  $rows       the rows to be batch inserted into the bucket
      *
      * @return int[]|false inserted ids
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function batchInsert($bucketName, $rows)
     {
@@ -115,13 +131,15 @@ abstract class Migration extends Component implements MigrationInterface
     /**
      * Update record.
      *
-     * @param string $bucketName the bucket to be updated.
-     * @param array $columns the column data (name => value) to be updated.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket to be updated.
+     * @param array        $columns    the column data (name => value) to be updated.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return int affected rows
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function update($bucketName, $columns, $condition, $params = [])
     {
@@ -138,10 +156,12 @@ abstract class Migration extends Component implements MigrationInterface
      * Upsert record.
      *
      * @param string $bucketName the bucket to be updated.
-     * @param string $id the document id.
-     * @param array $data the column data (name => value) to be inserted into the bucket or instance.
+     * @param string $id         the document id.
+     * @param array  $data       the column data (name => value) to be inserted into the bucket or instance.
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function upsert($bucketName, $id, $data)
     {
@@ -157,12 +177,14 @@ abstract class Migration extends Component implements MigrationInterface
     /**
      * Delete record
      *
-     * @param string $bucketName the bucket where the data will be deleted from.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the parameters to be bound to the command
+     * @param string       $bucketName the bucket where the data will be deleted from.
+     * @param string|array $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the parameters to be bound to the command
      *
      * @return int affected rows
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function delete($bucketName, $condition = '', $params = [])
     {
@@ -182,6 +204,8 @@ abstract class Migration extends Component implements MigrationInterface
      * @param string|string[] $indexNames names of index
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function buildIndex($bucketName, $indexNames)
     {
@@ -200,6 +224,8 @@ abstract class Migration extends Component implements MigrationInterface
      * @param array       $options
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function createPrimaryIndex($bucketName, $indexName = null, $options = [])
     {
@@ -216,6 +242,8 @@ abstract class Migration extends Component implements MigrationInterface
      * @param string $bucketName
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function dropPrimaryIndex($bucketName)
     {
@@ -237,6 +265,8 @@ abstract class Migration extends Component implements MigrationInterface
      * @param array      $options
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
     {
@@ -254,6 +284,8 @@ abstract class Migration extends Component implements MigrationInterface
      * @param string $indexName
      *
      * @return bool
+     * @throws Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function dropIndex($bucketName, $indexName)
     {

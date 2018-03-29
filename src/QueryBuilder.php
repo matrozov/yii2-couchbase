@@ -86,12 +86,15 @@ class QueryBuilder extends BaseObject
 
     /**
      * Generates a SELECT SQL statement from a [[Query]] object.
-     * @param Query $query the [[Query]] object from which the SQL statement will be generated.
+     *
+     * @param Query $query  the [[Query]] object from which the SQL statement will be generated.
      * @param array $params the parameters to be bound to the generated SQL statement. These parameters will
-     * be included in the result with the additional parameters generated during the query building process.
+     *                      be included in the result with the additional parameters generated during the query building process.
+     *
      * @return array the generated SQL statement (the first array element) and the corresponding
      * parameters to be bound to the SQL statement (the second array element). The parameters returned
      * include those provided in `$params`.
+     * @throws Exception
      */
     public function build($query, $params = [])
     {
@@ -217,13 +220,15 @@ class QueryBuilder extends BaseObject
      *
      * The method will properly escape the bucket and column names.
      *
-     * @param string $bucketName the bucket to be updated.
-     * @param array $columns the column data (name => value) to be updated.
-     * @param array|string $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the binding parameters that will be modified by this method
-     * so that they can be bound to the DB command later.
+     * @param string       $bucketName the bucket to be updated.
+     * @param array        $columns    the column data (name => value) to be updated.
+     * @param array|string $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the binding parameters that will be modified by this method
+     *                                 so that they can be bound to the DB command later.
+     *
      * @return string the UPDATE SQL
+     * @throws Exception
      */
     public function update($bucketName, $columns, $condition, &$params)
     {
@@ -288,13 +293,14 @@ class QueryBuilder extends BaseObject
      *
      * The method will properly escape the bucket and column names.
      *
-     * @param string $bucketName the bucket where the data will be deleted from.
-     * @param array|string $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the binding parameters that will be modified by this method
-     * so that they can be bound to the DB command later.
+     * @param string       $bucketName the bucket where the data will be deleted from.
+     * @param array|string $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the binding parameters that will be modified by this method
+     *                                 so that they can be bound to the DB command later.
      *
      * @return string the DELETE SQL
+     * @throws Exception
      */
     public function delete($bucketName, $condition = '', &$params)
     {
@@ -315,13 +321,14 @@ class QueryBuilder extends BaseObject
      *
      * The method will properly escape the bucket and column names.
      *
-     * @param string $bucketName the bucket where the data will be deleted from.
-     * @param array|string $condition the condition that will be put in the WHERE part. Please
-     * refer to [[Query::where()]] on how to specify condition.
-     * @param array $params the binding parameters that will be modified by this method
-     * so that they can be bound to the DB command later.
+     * @param string       $bucketName the bucket where the data will be deleted from.
+     * @param array|string $condition  the condition that will be put in the WHERE part. Please
+     *                                 refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params     the binding parameters that will be modified by this method
+     *                                 so that they can be bound to the DB command later.
      *
      * @return string the SELECT COUNT SQL
+     * @throws Exception
      */
     public function count($bucketName, $condition = '', &$params)
     {
@@ -402,6 +409,7 @@ class QueryBuilder extends BaseObject
      * @param array      $options
      *
      * @return string the CREATE INDEX SQL
+     * @throws Exception
      */
     public function createIndex($bucketName, $indexName, $columns, $condition = null, &$params = [], $options = [])
     {
@@ -443,12 +451,14 @@ class QueryBuilder extends BaseObject
     }
 
     /**
-     * @param array $columns
-     * @param array $params the binding parameters to be populated
-     * @param bool $distinct
+     * @param array  $columns
+     * @param array  $params the binding parameters to be populated
+     * @param bool   $distinct
      * @param string $selectOption
-     * @param Query $query
+     * @param Query  $query
+     *
      * @return string the SELECT clause built from [[Query::$select]].
+     * @throws Exception
      */
     public function buildSelect($columns, &$params, $distinct = false, $selectOption = null, $query)
     {
@@ -503,7 +513,9 @@ class QueryBuilder extends BaseObject
     /**
      * @param array $bucketName
      * @param array $params the binding parameters to be populated
+     *
      * @return string the FROM clause built from [[Query::$from]].
+     * @throws Exception
      */
     public function buildFrom($bucketName, &$params)
     {
@@ -590,6 +602,7 @@ class QueryBuilder extends BaseObject
      * @param array        $params
      *
      * @return array|string
+     * @throws Exception
      */
     private function quoteBucketName($bucketName, &$params)
     {
@@ -625,8 +638,10 @@ class QueryBuilder extends BaseObject
 
     /**
      * @param string|array $condition
-     * @param array $params the binding parameters to be populated
+     * @param array        $params the binding parameters to be populated
+     *
      * @return string the WHERE clause built from [[Query::$where]].
+     * @throws Exception
      */
     public function buildWhere($condition, &$params)
     {
@@ -660,8 +675,10 @@ class QueryBuilder extends BaseObject
 
     /**
      * @param string|array $condition
-     * @param array $params the binding parameters to be populated
+     * @param array        $params the binding parameters to be populated
+     *
      * @return string the HAVING clause built from [[Query::$having]].
+     * @throws Exception
      */
     public function buildHaving($condition, &$params)
     {
@@ -738,7 +755,9 @@ class QueryBuilder extends BaseObject
     /**
      * @param array $unions
      * @param array $params the binding parameters to be populated
+     *
      * @return string the UNION, INTERSECT and EXCEPT clause built from [[Query::$union]].
+     * @throws Exception
      */
     public function buildUnion($unions, &$params)
     {
@@ -792,10 +811,13 @@ class QueryBuilder extends BaseObject
 
     /**
      * Parses the condition specification and generates the corresponding SQL expression.
+     *
      * @param string|array|Expression $condition the condition specification. Please refer to [[Query::where()]]
-     * on how to specify a condition.
-     * @param array $params the binding parameters to be populated
+     *                                           on how to specify a condition.
+     * @param array                   $params    the binding parameters to be populated
+     *
      * @return string the generated SQL expression
+     * @throws Exception
      */
     public function buildCondition($condition, &$params)
     {
@@ -834,9 +856,12 @@ class QueryBuilder extends BaseObject
 
     /**
      * Creates a condition based on column-value pairs.
+     *
      * @param array $condition the condition specification.
-     * @param array $params the binding parameters to be populated
+     * @param array $params    the binding parameters to be populated
+     *
      * @return string the generated SQL expression
+     * @throws Exception
      */
     public function buildHashCondition($condition, &$params)
     {
@@ -875,10 +900,13 @@ class QueryBuilder extends BaseObject
 
     /**
      * Connects two or more SQL expressions with the `AND` or `OR` operator.
+     *
      * @param string $operator the operator to use for connecting the given operands
-     * @param array $operands the SQL expressions to connect.
-     * @param array $params the binding parameters to be populated
+     * @param array  $operands the SQL expressions to connect.
+     * @param array  $params   the binding parameters to be populated
+     *
      * @return string the generated SQL expression
+     * @throws Exception
      */
     public function buildAndCondition($operator, $operands, &$params)
     {
@@ -912,11 +940,13 @@ class QueryBuilder extends BaseObject
 
     /**
      * Inverts an SQL expressions with `NOT` operator.
+     *
      * @param string $operator the operator to use for connecting the given operands
-     * @param array $operands the SQL expressions to connect.
-     * @param array $params the binding parameters to be populated
+     * @param array  $operands the SQL expressions to connect.
+     * @param array  $params   the binding parameters to be populated
+     *
      * @return string the generated SQL expression
-     * @throws InvalidArgumentException if wrong number of operands have been given.
+     * @throws Exception
      */
     public function buildNotCondition($operator, $operands, &$params)
     {
@@ -1071,11 +1101,13 @@ class QueryBuilder extends BaseObject
     /**
      * Builds SQL for IN condition
      *
-     * @param string $operator
+     * @param string       $operator
      * @param array|string $columns
-     * @param Query $values
-     * @param array $params
+     * @param Query        $values
+     * @param array        $params
+     *
      * @return string SQL
+     * @throws Exception
      */
     protected function buildSubqueryInCondition($operator, $columns, $values, &$params)
     {
@@ -1223,11 +1255,13 @@ class QueryBuilder extends BaseObject
 
     /**
      * Creates an SQL expressions like `"column" operator value`.
+     *
      * @param string $operator the operator to use. Anything could be used e.g. `>`, `<=`, etc.
-     * @param array $operands contains two column names.
-     * @param array $params the binding parameters to be populated
+     * @param array  $operands contains two column names.
+     * @param array  $params   the binding parameters to be populated
+     *
      * @return string the generated SQL expression
-     * @throws InvalidArgumentException if wrong number of operands have been given.
+     * @throws Exception
      */
     public function buildSimpleCondition($operator, $operands, &$params)
     {

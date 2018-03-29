@@ -28,6 +28,7 @@ class ActiveRecord extends BaseActiveRecord
      * By default, the "couchbase" application component is used as the Couchbase connection.
      * You may override this method if you want to use a different database connection.
      * @return Connection the database connection used by this AR class.
+     * @throws InvalidConfigException
      */
     public static function getDb()
     {
@@ -43,15 +44,19 @@ class ActiveRecord extends BaseActiveRecord
      * ```
      *
      * @param array $attributes attribute values (name-value pairs) to be saved into the bucket
-     * @param array $condition description of the objects to update.
-     * Please refer to [[Query::where()]] on how to specify this parameter.
-     * @param array $options list of options in format: optionName => optionValue.
+     * @param array $condition  description of the objects to update.
+     *                          Please refer to [[Query::where()]] on how to specify this parameter.
+     * @param array $options    list of options in format: optionName => optionValue.
+     *
      * @return int the number of documents updated.
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public static function updateAll($attributes, $condition = [], $options = [])
     {
         return static::getBucket()->update($condition, $attributes, $options);
     }
+
     /**
      * Updates all documents in the bucket using the provided counter changes and conditions.
      * For example, to increment all customers' age by 1,
@@ -60,17 +65,21 @@ class ActiveRecord extends BaseActiveRecord
      * Customer::updateAllCounters(['age' => 1]);
      * ```
      *
-     * @param array $counters the counters to be updated (attribute name => increment value).
-     * Use negative values if you want to decrement the counters.
+     * @param array $counters  the counters to be updated (attribute name => increment value).
+     *                         Use negative values if you want to decrement the counters.
      * @param array $condition description of the objects to update.
-     * Please refer to [[Query::where()]] on how to specify this parameter.
-     * @param array $options list of options in format: optionName => optionValue.
+     *                         Please refer to [[Query::where()]] on how to specify this parameter.
+     * @param array $options   list of options in format: optionName => optionValue.
+     *
      * @return int the number of documents updated.
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public static function updateAllCounters($counters, $condition = [], $options = [])
     {
         return static::getBucket()->update($condition, ['$inc' => $counters], $options);
     }
+
     /**
      * Deletes documents in the bucket using the provided conditions.
      * WARNING: If you do not specify any condition, this method will delete documents rows in the bucket.
@@ -82,9 +91,12 @@ class ActiveRecord extends BaseActiveRecord
      * ```
      *
      * @param array $condition description of the objects to delete.
-     * Please refer to [[Query::where()]] on how to specify this parameter.
-     * @param array $options list of options in format: optionName => optionValue.
+     *                         Please refer to [[Query::where()]] on how to specify this parameter.
+     * @param array $options   list of options in format: optionName => optionValue.
+     *
      * @return int the number of documents deleted.
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public static function deleteAll($condition = [], $options = [])
     {
@@ -117,10 +129,12 @@ class ActiveRecord extends BaseActiveRecord
     {
         return Inflector::camel2id(StringHelper::basename(get_called_class()), '_');
     }
-    
+
     /**
      * Return the Couchbase bucket instance for this AR class.
      * @return Bucket bucket instance.
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public static function getBucket()
     {
@@ -278,9 +292,15 @@ class ActiveRecord extends BaseActiveRecord
 
         return true;
     }
-    
+
     /**
      * @see ActiveRecord::update()
+     *
+     * @param null $attributes
+     *
+     * @return bool|int
+     * @throws Exception
+     * @throws InvalidConfigException
      * @throws StaleObjectException
      */
     protected function updateInternal($attributes = null)
@@ -331,7 +351,7 @@ class ActiveRecord extends BaseActiveRecord
         
         return $rows;
     }
-    
+
     /**
      * Deletes the document corresponding to this active record from the bucket.
      *
@@ -347,9 +367,10 @@ class ActiveRecord extends BaseActiveRecord
      *
      * @return int|bool the number of documents deleted, or false if the deletion is unsuccessful for some reason.
      * Note that it is possible the number of documents deleted is 0, even though the deletion execution is successful.
+     * @throws Exception
+     * @throws InvalidConfigException
      * @throws StaleObjectException if [[optimisticLock|optimistic locking]] is enabled and the data
      * being deleted is outdated.
-     * @throws Exception in case delete failed.
      */
     public function delete()
     {
@@ -363,9 +384,12 @@ class ActiveRecord extends BaseActiveRecord
         
         return $result;
     }
-    
+
     /**
      * @see ActiveRecord::delete()
+     * @return bool|int
+     * @throws Exception
+     * @throws InvalidConfigException
      * @throws StaleObjectException
      */
     protected function deleteInternal()
