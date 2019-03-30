@@ -163,7 +163,7 @@ class QueryBuilder extends BaseObject
     public function insert($bucketName, $data)
     {
         $bucketName = $this->db->quoteBucketName($bucketName);
-        $data       = Json::encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT);
+        $data       = Json::encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         return "INSERT INTO $bucketName (KEY, VALUE) VALUES (UUID(), $data) " . $this->buildReturning([new Expression('META().id AS `_id`')]);
     }
