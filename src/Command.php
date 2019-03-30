@@ -8,6 +8,7 @@ namespace matrozov\couchbase;
 
 use Couchbase\N1qlQuery;
 use Yii;
+use yii\helpers\Json;
 use yii\base\BaseObject;
 use yii\db\DataReader;
 
@@ -117,6 +118,11 @@ class Command extends BaseObject
         $this->prepare();
 
         if (!isset($params[1])) {
+            foreach ($params as $qp => $param) {
+                if (is_array($param)) {
+                    $params[$qp] = Json::encode($param);
+                }
+            }
             return strtr($this->_sql, $params);
         }
 
