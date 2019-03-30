@@ -6,6 +6,8 @@
 
 namespace matrozov\couchbase;
 
+use CouchbaseCluster;
+use Couchbase\PasswordAuthenticator;
 use Couchbase\Cluster;
 use Couchbase\ClusterManager;
 use Yii;
@@ -135,7 +137,7 @@ class Connection extends Component
         }
 
         if (!array_key_exists($bucketName, $this->_buckets)) {
-            $this->_buckets[$bucketName] = $this->selectBucket($bucketName, $password);
+            $this->_buckets[$bucketName] = $this->selectBucket($bucketName);
         }
 
         return $this->_buckets[$bucketName];
@@ -151,12 +153,12 @@ class Connection extends Component
      * @throws Exception
      * @throws InvalidConfigException
      */
-    protected function selectBucket($name, $password = '')
+    protected function selectBucket($name)
     {
         $this->open();
 
         try {
-            $bucket = $this->cluster->openBucket($name, $password);
+            $bucket = $this->cluster->openBucket($name);
         }
         catch (\Exception $e) {
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
@@ -221,7 +223,11 @@ class Connection extends Component
             Yii::trace($token, __METHOD__);
             Yii::beginProfile($token, __METHOD__);
 
-            $this->cluster = new Cluster($this->dsn);
+            $authenticator = new PasswordAuthenticator();
+            $authenticator->username($this->userName)->password($this->password);
+
+            $this->cluster = new CouchbaseCluster($this->dsn);
+            $this->cluster->authenticate($authenticator);
 
             $this->initConnection();
 
@@ -242,14 +248,15 @@ class Connection extends Component
      */
     public function openManager()
     {
+        /*
         if ($this->manager !== null) {
             return;
-        }
+        }*/
 
         if ($this->cluster === null) {
             $this->open();
         }
-
+        /*
         if (empty($this->userName) || empty($this->password)) {
             throw new InvalidConfigException($this->className() . '::userName/password cannot be empty.');
         }
@@ -268,7 +275,7 @@ class Connection extends Component
             Yii::endProfile($token, __METHOD__);
 
             throw new Exception($e->getMessage(), (int)$e->getCode(), $e);
-        }
+        }*/
     }
 
     /**
